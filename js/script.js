@@ -1,21 +1,16 @@
-const RADIO_NAME = 'Jailson Webradio';
+const RADIO_NAME = 'Bendición Stereo';
 
-// Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
-const URL_STREAMING = 'https://stream.zeno.fm/2p5tpsaurfhvv';
+// Change Stream URL Here, .
+const URL_STREAMING = 'https://sv2.globalhostlive.com/proxy/bendistereo/stream2';
 
-// You can find the mount point in the Broadcast Settings.
-// To generate the Zeno Radio API link from the mount point,
-// exclude the '/source' part and append the remaining mount point to the base URL of the API.
-// For example, if the mount point is 'yn65fsaurfhvv/source',
-// the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
-
-const url = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv';
+//API URL Now Playing
+const API_URL = 'https://twj.es/get_stream_title/?url='+URL_STREAMING
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
 
-// Variable to control history display: true = display / false = hides
-let showHistory = true; 
+let userInteracted = false;
+let musicHistory = JSON.parse(localStorage.getItem('musicHistory')) || [];
 
 window.onload = function () {
     var page = new Page;
@@ -35,7 +30,6 @@ window.onload = function () {
 
     coverArt.style.height = coverArt.offsetWidth + 'px';
 
-    localStorage.removeItem('musicHistory');
 }
 
 // DOM control
@@ -48,18 +42,18 @@ class Page {
         this.refreshCurrentSong = function (song, artist) {
             var currentSong = document.getElementById('currentSong');
             var currentArtist = document.getElementById('currentArtist');
-
+    
             if (song !== currentSong.innerHTML) {
                 // Animate transition
                 currentSong.className = 'animated flipInY text-uppercase';
                 currentSong.innerHTML = song;
-
+    
                 currentArtist.className = 'animated flipInY text-capitalize';
                 currentArtist.innerHTML = artist;
-
+    
                 // Refresh modal title
                 document.getElementById('lyricsSong').innerHTML = song + ' - ' + artist;
-
+    
                 // Remove animation classes
                 setTimeout(function () {
                     currentSong.className = 'text-uppercase';
@@ -68,18 +62,52 @@ class Page {
             }
         };
 
-        // Função para atualizar a capa
-        this.refreshCover = function (song = '', artist) {
-            // Default cover art
-            var urlCoverArt = 'img/cover.png';
-
-            // Criação da tag de script para fazer a requisição JSONP à API do Deezer
-            const script = document.createElement('script');
-            script.src = `https://api.deezer.com/search?q=${artist} ${song}&output=jsonp&callback=handleDeezerResponse`;
-            document.body.appendChild(script);
+        this.refreshCover = function (song, artist, artUrl) { // Adiciona parâmetro artUrl
+            var coverArt = document.getElementById('currentCoverArt');
+            var coverBackground = document.getElementById('bgCover');
+    
+            // Usa a URL da capa da API, ou uma imagem padrão se não houver
+            var urlCoverArt = artUrl || 'img/cover.png';
+    
+            // Atualiza apenas se a música ou a capa forem diferentes
+            if (song !== lastSong.title || artist !== lastSong.artist || urlCoverArt !== lastCoverArt) {
+                lastSong = { title: song, artist: artist }; // Atualiza a música anterior
+                lastCoverArt = urlCoverArt; // Atualiza a capa anterior
+    
+                coverArt.style.backgroundImage = 'url(' + urlCoverArt + ')';
+                coverArt.className = 'animated bounceInLeft';
+    
+                coverBackground.style.backgroundImage = 'url(' + urlCoverArt + ')';
+    
+                setTimeout(function () {
+                    coverArt.className = '';
+                }, 2000);
+            }
         };
 
+        this.refreshHistoric = function (index) {
+            var historicSongs = document.getElementById('historicSong').querySelectorAll('.col-md-6');
 
+            if (index >= 0 && index < historicSongs.length && index < musicHistory.length) {
+                var historicItem = historicSongs[index];
+                var coverElement = historicItem.querySelector('.cover-historic');
+                var songElement = historicItem.querySelector('.song');
+                var artistElement = historicItem.querySelector('.artist');
+
+                if (coverElement) {
+                    coverElement.style.backgroundImage = 'url(' + musicHistory[index].art + ')';
+                }
+                if (songElement) {
+                    songElement.textContent = musicHistory[index].title;
+                }
+                if (artistElement) {
+                    artistElement.textContent = musicHistory[index].artist;
+                }
+            } else {
+                console.error('Índice fora do intervalo válido para histórico de músicas.');
+            }
+        };
+        
         this.changeVolumeIndicator = function (volume) {
             document.getElementById('volIndicator').innerHTML = volume;
 
@@ -129,6 +157,82 @@ class Page {
         };
     }
 }
+
+let lastSong = { title: '', artist: '' };
+let lastCoverArt = '';
+
+function getStreamingData() {
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            const page = new Page();
+
+            // Atualiza informações da música atual
+            page.refreshCurrentSong(data.song, data.artist);
+
+            // Atualiza a capa (passando a URL da capa da API)
+            page.refreshCover(data.song, data.artist, data.art); 
+
+            page.refreshLyric(data.song, data.artist);
+
+            // Adiciona a música atual ao histórico (se for diferente da última)
+            if (musicHistory.length === 0 || musicHistory[musicHistory.length - 1].title !== data.song) {
+                musicHistory.push({ title: data.song, artist: data.artist, art: data.art || '' });
+                if (musicHistory.length > 4) {
+                    musicHistory.shift();
+                }
+                localStorage.setItem('musicHistory', JSON.stringify(musicHistory));
+            }
+
+            // Atualiza a interface do histórico
+            updateHistoryUI();
+        })
+        .catch(error => console.error('Erro ao buscar dados da API:', error));
+}
+
+// Função para atualizar a interface do histórico
+
+function updateHistoryUI() {
+    const historicSong = document.getElementById("historicSong");
+    historicSong.innerHTML = ""; // Limpa o histórico atual
+
+    // Percorre o histórico em ordem inversa e cria os elementos
+    for (let i = musicHistory.length - 2; i >= 0; i--) {
+        const songInfo = musicHistory[i];
+
+        const historicItem = document.createElement("article");
+        historicItem.classList.add("col-12", "col-md-6");
+
+        const coverElement = document.createElement("div");
+        coverElement.classList.add("cover-historic");
+        coverElement.style.backgroundImage = `url(${songInfo.art || 'img/cover.png'})`;
+        historicItem.appendChild(coverElement);
+
+        const musicInfo = document.createElement('div');
+        musicInfo.classList.add("music-info");
+
+        const songElement = document.createElement("div");
+        songElement.classList.add("song");
+        songElement.textContent = songInfo.title;
+        musicInfo.appendChild(songElement);
+
+        const artistElement = document.createElement("div");
+        artistElement.classList.add("artist");
+        artistElement.textContent = songInfo.artist;
+        musicInfo.appendChild(artistElement);
+        
+        historicItem.appendChild(musicInfo);
+        historicSong.appendChild(historicItem);
+    }
+}
+function clearHistory() {
+    localStorage.removeItem('musicHistory');
+    musicHistory = []; // Limpa o array musicHistory
+    updateHistoryUI(); // Atualiza a interface do histórico
+  }
+
+//####################################### AUDIO #######################################
+
 
 // Variável global para armazenar as músicas
 var audio = new Audio(URL_STREAMING);
@@ -208,6 +312,14 @@ function togglePlay() {
         audio.load();
         audio.play();
     }
+    const playerButton = document.getElementById("playerButton");
+    if (player.paused) {
+        playerButton.classList.remove("fa-pause");
+        playerButton.classList.add("fa-play");
+    } else {
+        playerButton.classList.remove("fa-play");
+        playerButton.classList.add("fa-pause");
+    }
 }
 
 function volumeUp() {
@@ -242,241 +354,6 @@ function mute() {
         audio.muted = false;
     }
 }
-
-// Função para lidar com a conexão de eventos
-function connectToEventSource(url) {
-    // Criar uma nova instância de EventSource com a URL fornecida
-    const eventSource = new EventSource(url);
-
-    // Adicionar um ouvinte para o evento 'message'
-    eventSource.addEventListener('message', function(event) {
-        // Chamar a função para tratar os dados recebidos, passando a URL também
-        processData(event.data, url);
-    });
-
-    // Adicionar um ouvinte para o evento 'error'
-    eventSource.addEventListener('error', function(event) {
-        console.error('Erro na conexão de eventos:', event);
-        // Tentar reconectar após um intervalo de tempo
-        setTimeout(function() {
-            connectToEventSource(url);
-        }, 1000);
-    });
-}
-
-// Função para tratar os dados recebidos
-function processData(data) {
-    // Parse JSON
-    const parsedData = JSON.parse(data);
-    
-    // Verificar se a mensagem é sobre a música
-    if (parsedData.streamTitle) {
-        // Extrair o título da música e o artista
-        let artist, song;
-        const streamTitle = parsedData.streamTitle;
-
-        if (streamTitle.includes('-')) {
-            [artist, song] = streamTitle.split(' - ');
-        } else {
-            // Se não houver "-" na string, consideramos que o título é apenas o nome da música
-            artist = '';
-            song = streamTitle;
-        }
-
-        // Criar o objeto com os dados formatados
-        const formattedData = {
-            currentSong: song.trim(),
-            currentArtist: artist.trim()
-        };
-
-        // Converter o objeto em JSON
-        const jsonData = JSON.stringify(formattedData);
-
-        // Chamar a função getStreamingData com os dados formatados e a URL
-        getStreamingData(jsonData);
-    } else {
-        console.log('Mensagem recebida:', parsedData);
-    }
-}
-
-// Iniciar a conexão com a API
-connectToEventSource(url);
-
-// Define a função de manipulação da resposta da API do Deezer no escopo global
-function handleDeezerResponse(data, song) {
-    var coverArt = document.getElementById('currentCoverArt');
-    var coverBackground = document.getElementById('bgCover');
-
-    if (data.data && data.data.length > 0) {
-        // Buscar o Cover pelo nome do Artista
-        // var artworkUrl = data.data[0].artist.picture_big;
-        // Buscar o Cover pelo nome da música
-        var artworkUrl = data.data[0].album.cover_big;
-
-        coverArt.style.backgroundImage = 'url(' + artworkUrl + ')';
-        coverArt.className = 'animated bounceInLeft';
-
-        coverBackground.style.backgroundImage = 'url(' + artworkUrl + ')';
-    } else {
-        // Caso não haja dados ou a lista de dados esteja vazia,
-        // defina a capa padrão
-        var defaultArtworkUrl = 'img/cover.png';
-
-        coverArt.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
-        coverBackground.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
-    }
-
-    setTimeout(function () {
-        coverArt.className = '';
-    }, 2000);
-
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: song,
-            artist: data.data[0].artist.name,
-            artwork: [{
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '96x96',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '128x128',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '192x192',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '256x256',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '384x384',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '512x512',
-                    type: 'image/png'
-                }
-            ]
-        });
-    }
-}
-
-function getStreamingData(data) {
-
-    console.log("Conteúdo dos dados recebidos:", data);
-    // Parse JSON
-    var jsonData = JSON.parse(data);
-
-    var page = new Page();
-
-    // Formatar caracteres para UTF-8
-    let song = jsonData.currentSong.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-    let artist = jsonData.currentArtist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-
-    // Mudar o título
-    document.title = song + ' - ' + artist + ' | ' + RADIO_NAME;
-
-    page.refreshCover(song, artist);
-    page.refreshCurrentSong(song, artist);
-    page.refreshLyric(song, artist);
-
-    if (showHistory) {
-
-        // Verificar se a música é diferente da última atualizada
-        if (musicHistory.length === 0 || (musicHistory[0].song !== song)) {
-            // Atualizar o histórico com a nova música
-            updateMusicHistory(artist, song);
-        }
-
-        // Atualizar a interface do histórico
-        updateHistoryUI();
-
-    }
-}
-
-function updateHistoryUI() {
-    let historicElement = document.querySelector('.historic');
-    if (showHistory) {
-      historicElement.classList.remove('hidden'); // Show history
-    } else {
-      historicElement.classList.add('hidden'); // Hide history
-    }
-}
-
-// Variável global para armazenar o histórico das duas últimas músicas
-var musicHistory = [];
-
-// Função para atualizar o histórico das duas últimas músicas
-function updateMusicHistory(artist, song) {
-    // Adicionar a nova música no início do histórico
-    musicHistory.unshift({ artist: artist, song: song });
-
-    // Manter apenas as duas últimas músicas no histórico
-    if (musicHistory.length > 4) {
-        musicHistory.pop(); // Remove a música mais antiga do histórico
-    }
-
-    // Chamar a função para exibir o histórico atualizado
-    displayHistory();
-}
-
-
-function displayHistory() {
-    var $historicDiv = document.querySelectorAll('#historicSong article');
-    var $songName = document.querySelectorAll('#historicSong article .music-info .song');
-    var $artistName = document.querySelectorAll('#historicSong article .music-info .artist');
-
-    // Exibir as duas últimas músicas no histórico, começando do índice 1 para excluir a música atual
-    for (var i = 1; i < musicHistory.length && i < 3; i++) {
-        $songName[i - 1].innerHTML = musicHistory[i].song;
-        $artistName[i - 1].innerHTML = musicHistory[i].artist;
-
-        // Chamar a função para buscar a capa da música na API do Deezer
-        refreshCoverForHistory(musicHistory[i].song, musicHistory[i].artist, i - 1);
-
-        // Adicionar classe para animação
-        $historicDiv[i - 1].classList.add('animated');
-        $historicDiv[i - 1].classList.add('slideInRight');
-    }
-
-    // Remover classes de animação após 2 segundos
-    setTimeout(function () {
-        for (var j = 0; j < 2; j++) {
-            $historicDiv[j].classList.remove('animated');
-            $historicDiv[j].classList.remove('slideInRight');
-        }
-    }, 2000);
-}
-
-// Função para atualizar a capa da música no histórico
-function refreshCoverForHistory(song, artist, index) {
-    // Criação da tag de script para fazer a requisição JSONP à API do Deezer
-    const script = document.createElement('script');
-    script.src = `https://api.deezer.com/search?q=${encodeURIComponent(artist)} ${encodeURIComponent(song)}&output=jsonp&callback=handleDeezerResponseForHistory_${index}`;
-    document.body.appendChild(script);
-
-    // Função de manipulação da resposta da API do Deezer para o histórico de músicas
-    window['handleDeezerResponseForHistory_' + index] = function (data) {
-        if (data.data && data.data.length > 0) {
-            // Atualizar a capa pelo nome do artista
-            // var artworkUrl = data.data[0].artist.picture_big;
-            // Atualizar a capa pelo nome da música
-            var artworkUrl = data.data[0].album.cover_big;
-            // Atualizar a capa da música no histórico usando o índice correto
-            var $coverArt = document.querySelectorAll('#historicSong article .cover-historic')[index];
-            $coverArt.style.backgroundImage = 'url(' + artworkUrl + ')';
-        }
-    };
-}
-
 
 document.addEventListener('keydown', function (event) {
     var key = event.key;
