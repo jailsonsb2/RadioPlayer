@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
@@ -40,9 +40,14 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="row">
-                                            <div class="play-pause col-12 col-md-6 text-center">
+                                            <!--div class="play-pause col-12 col-md-6 text-center">
                                                 <button  type="button" class="btn-play" onclick="togglePlay()">
                                                     <i id="playerButton" class="fa fa-play"></i> <span id="buttonPlay">PLAY</span>
+                                                </button>
+                                            </div-->
+                                            <div class="play-pause col-12 col-md-6 text-center">
+                                                <button type="button" class="btn-play-circle" onclick="togglePlay()">
+                                                    <i id="playerButton" class="fa fa-play"></i> 
                                                 </button>
                                             </div>
                                         </div>
@@ -54,7 +59,7 @@
                                                     </div>
                                                     <div class="volume-slide col-10 text-center">       
                                                         <input type="range" id="volume" step="1" min="0" max="100" value="80" onchange="updateVolume(this.value)">
-                                                        <label for="volume">Volume:</label>
+                                                        <label for="volume">Volumen:</label>
                                                         <span id="volIndicator">80</span> %
                                                     </div>
                                                 </div>
@@ -62,7 +67,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-12 col-md-6 text-center call-lyrics">
-                                                <a href="#" class="lyrics"  data-target="#modalLyrics">Letra da música</a>
+                                                <a href="#" class="lyrics"  data-target="#modalLyrics">Letra</a>
                                             </div>
                                         </div>
                                     </div>
@@ -71,9 +76,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="row historic hidden">
+                <div class="row historic">
                     <div class="col-12">
-                        <h2>MÚSICAS RECENTES</h2>
+                        <h2>CANCIONES RECIENTES</h2>
+                        <!--button class="btn-play" onclick="clearHistory()"></button-->
                         <div class="row" id="historicSong">
                             <article class="col-12 col-md-6">
                                 <div class="cover-historic" id="cover-historic-1"></div>
@@ -107,7 +113,7 @@
                 
                 <div class="modal-body" id="lyric"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal">cerrar</button>
                 </div>
             </div>
         </div>
