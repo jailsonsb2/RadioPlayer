@@ -75,7 +75,7 @@ body {
 
 #currentCoverArt {
     width: 100%;
-    height: 316px;
+    height: 100%;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -388,6 +388,7 @@ input[type=range]::-ms-thumb {
 #playerButton {
     color: black;
 }
+
 .play-pause i {
     cursor: pointer;
 }
@@ -412,6 +413,29 @@ input[type=range]::-ms-thumb {
     transform: scale(1.1);
 }
 
+.btn-play-circle {
+    background-color: white;
+    border: none;
+    color: black;
+    padding: 10px 20px; 
+    font-size: 20px; 
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 50%;  /* Torna o botão circular */
+    width: 60px;          /* Define uma largura fixa */
+    height: 60px;         /* Define uma altura fixa (igual à largura) */
+    align-items: center;
+    justify-content: center;
+    transition: transform .2s;
+    box-shadow: 1px 3px #30303022;
+}
+
+.btn-play-circle:focus {outline:0;}
+
+.btn-play-circle:hover {
+    box-shadow: 1px 5px #30303022;
+    transform: scale(1.1);
+}
 .close{
     color: white;
 
