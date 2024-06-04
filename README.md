@@ -1,12 +1,11 @@
-# HTML5 Icecast/Shoutcast/Zeno Radio Full Page Radio Player with PWA Support
+# HTML5 Icecast/Shoutcast Full Page Radio Player with PWA Support
 
 * Current song
-* Historic of played songs ( added option to show or hide history song )
-* Cover art of the current song ([Deezer API](https://developers.deezer.com/login?redirect=/api))
+* Historic of played songs
+* Cover art of the current song
 * Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
-* Now available Azuracast support
 
 ## Demo Screenshots
 
@@ -16,42 +15,20 @@
 
 # Documentation.
 
-Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio/blob/main/js/script.js) file and edit the lines Below.
+Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-All-Streams/blob/main/js/script.js) file and edit the lines Below.
 
 ```javascript
 // RADIO NAME
 const RADIO_NAME = 'Your Radio Name';
 
-// Change Stream URL Zeno Radio Here.
-const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
-
-// You can find the mount point in the Broadcast Settings.
-// To generate the Zeno Radio API link from the mount point,
-// exclude the '/source' part and append the remaining mount point to the base URL of the API.
-// For example, if the mount point is 'yn65fsaurfhvv/source',
-// the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
-
-const API_URL = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'
-
-// Variable to control history display: true = display / false = hides
-let showHistory = true; 
+// Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
+const URL_STREAMING = 'https://sv2.globalhostlive.com/proxy/bendistereo/stream2';
 
  ```
 
  ## Change Logo.
 
  Open The img folder and add your logo named "cover.png"
-
- ## Zeno Radio API Now Playing.
-
-To generate the Zeno Radio API link from the mount point,
-exclude the '/source' part and append the remaining mount point to the base URL of the API.
-You can find the mount point in the Broadcast Settings.
-For example, if the mount point is 'yn65fsaurfhvv/source',
-the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
-
-![Demo Screenshot](https://i.imgur.com/8F61uyD.jpg)
-
 
  ## Installation
 Just put the files in your server or use Free Hosting
@@ -97,12 +74,22 @@ Here's an example:
 ```
 
 ## Supported Hosting Types
+* Icecast / Shoutcast
 * Zeno Radio
+* RadioJar
 * Azuracast
+* Centova Cast
+* Everest Cast
+* MediaCP
+* Sonic Panel
 
 ## Supported API/Data Sources
+* Apple Music / Itunes
 * Deezer
-* Azuracast
+* Spotify
+* Azuracast 
+* MediCP 
+* CentovaCast
 
 ## Keyboard Controls 
 * `M` - mute/unmute
