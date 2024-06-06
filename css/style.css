@@ -35,10 +35,11 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center 20%;
-    -webkit-filter: blur(20px);
     filter: blur(20px);
+    -webkit-filter: blur(20px);
     transition: all .5s linear;
-    transform: scale(2.2); 
+    transform: scale(2.2);
+  
     z-index: 1;
 }
 
@@ -52,7 +53,7 @@ body {
 
 .web-player {
     height: 100%;
-    color: #fefefe;
+    color: #fff;
     padding: 5px;
     position: relative;
     z-index: 3;
@@ -68,6 +69,7 @@ body {
     box-shadow: 0px 5px 10px 3px rgba(0, 0, 0, 0.4);
     transition: background-image 1s;
     border-radius: 10px;
+
     margin-bottom: 15px;
 }
 
@@ -79,11 +81,10 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-radius: 10px;
+     border-radius: 10px;
   
     transition: background-image 1s;
 }
-
 
 .logo {
     display: none;
@@ -95,7 +96,7 @@ body {
 }
 
 .info-current-song h2 {
-    font-size: 38px;
+    font-size: 46px;
     text-transform: uppercase;
     font-weight: 800;
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
@@ -119,11 +120,13 @@ body {
 }
 
 .play-pause {
-    font-size: 65px;
+    font-size: 65px; 
+    color: white; 
 }
 
 .play-pause i {
     cursor: pointer;
+    color: white; 
 }
 
 .volume-icon {
@@ -132,8 +135,8 @@ body {
 }
 
 .volume-slide {
-     /* Adicionando sombra */
-     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    
 }
 
 .volume-control {
@@ -141,14 +144,14 @@ body {
 }
 
 .vagalume a {
-    color: #fefefe;
+    color: #fff;
     text-decoration: underline;
 }
 
 .lyrics {
     text-transform: uppercase;
-    text-decoration: none;
-    color: #fefefe;
+    text-decoration: underline;
+    color: #fff;
     font-size: 1em;
     font-weight: 400;
     outline: none;
@@ -158,17 +161,17 @@ body {
 
 .lyrics:active {
     text-decoration: none;
-    color: #fefefe;
+    color: #fff;
 }
 
 .lyrics:visited {
     text-decoration: none;
-    color: #fefefe;
+    color: #fff;
 }
 
 .modal-content {
     background-color: rgba(0, 0, 0, 0.8);
-    color: #fefefe !important;
+    color: #fff !important;
     border-radius: 20px;
 }
 
@@ -177,13 +180,9 @@ body {
     background-color: #00E1E7;
 }
 
-.hidden {
-    display: none; 
-  }
-
 /* Chrome */
 input[type=range] {
-    appearance: none;
+    -webkit-appearance: none;
     background: transparent;
     width: 100%;
 }
@@ -198,7 +197,7 @@ input[type=range]::-webkit-slider-runnable-track {
     cursor: pointer;
     animation: 0.2s;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fefefe;
+    background: #fff;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -206,7 +205,7 @@ input[type=range]::-webkit-slider-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fefefe;
+    background: #fff;
     cursor: pointer;
     -webkit-appearance: none;
     margin-top: -8px;
@@ -219,7 +218,7 @@ input[type=range]::-moz-range-track {
     cursor: pointer;
     animation: 0.2s;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fefefe;
+    background: #fff;
 }
 
 input[type=range]::-moz-range-thumb {
@@ -228,7 +227,7 @@ input[type=range]::-moz-range-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fefefe;
+    background: #fff;
     cursor: pointer;
 }
 
@@ -246,13 +245,13 @@ input[type=range]::-ms-track {
 }
 
 input[type=range]::-ms-fill-lower {
-    background: #fefefe;
+    background: #fff;
     border: 0px solid #000101;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 }
 
 input[type=range]::-ms-fill-upper {
-    background: #fefefe;
+    background: #fff;
     border: 0px solid #000101;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 }
@@ -263,7 +262,7 @@ input[type=range]::-ms-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fefefe;
+    background: #fff;
     cursor: pointer;
 }
 
@@ -275,7 +274,7 @@ input[type=range]::-ms-thumb {
     font-weight: bold;
     text-transform: uppercase;
     margin: 10px 0;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);   
     
 }
 
@@ -386,12 +385,9 @@ input[type=range]::-ms-thumb {
     padding-left: 10px;
 }
 #playerButton {
-    color: black;
+    color: white;
 }
 
-.play-pause i {
-    cursor: pointer;
-}
 .btn-play {
     background-color: white;
     border: none;
@@ -436,8 +432,18 @@ input[type=range]::-ms-thumb {
     box-shadow: 1px 5px #30303022;
     transform: scale(1.1);
 }
+
+/* Ícone de play */
+.fa-play-circle { 
+    color: white; 
+  }
+  
+  /* Ícone de pause */
+  .fa-pause-circle { 
+    color: white;
+  }
+
 .close{
     color: white;
 
 }
-
