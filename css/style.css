@@ -111,11 +111,17 @@ body {
 
 .current-song {
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
 }
 
 .current-artist {
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
 }
 
@@ -132,6 +138,8 @@ body {
 .volume-icon {
     font-size: 28px;
     margin-top: -5px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    border: none; /* Adicionado para remover a borda */
 }
 
 .volume-slide {
@@ -139,8 +147,23 @@ body {
     
 }
 
+
 .volume-control {
     display: none;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.volume-slide input[type="range"] {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    outline: none;
+    border-radius: 5px;
+    border: none; /* Adicionado para remover a borda */
+}
+
+.percentual-volume {
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    border: none; /* Adicionado para remover a borda */
 }
 
 .vagalume a {
@@ -446,4 +469,14 @@ input[type=range]::-ms-thumb {
 .close{
     color: white;
 
+}
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out; /* Ajuste o tempo conforme necessário */
+  }
+  
+  .fade-in {
+    opacity: 1;
+    transition: opacity 0.5s ease-in; /* Ajuste o tempo conforme necessário */
 }
