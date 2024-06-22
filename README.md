@@ -7,6 +7,7 @@
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
 
+
 ## Demo Screenshots
 
 ![Demo Screenshot](https://i.imgur.com/QcbLFzn.jpg)
@@ -22,7 +23,7 @@ Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-All-Streams/blob/
 const RADIO_NAME = 'Your Radio Name';
 
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
-const URL_STREAMING = 'https://sv2.globalhostlive.com/proxy/bendistereo/stream2';
+const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
  ```
 
