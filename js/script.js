@@ -189,7 +189,8 @@ class Page {
               if (data.type === 'exact' || data.type === 'aprox') {
                 const lyric = data.mus[0].text;
           
-                document.getElementById('lyric').textContent = lyric.replace(/\n/g, '<br />'); // Use textContent em vez de innerHTML
+                //document.getElementById('lyric').textContent = lyric.replace(/\n/g, '<br />'); Use textContent em vez de innerHTML
+                document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
                 openLyric.style.opacity = "1";
                 openLyric.setAttribute('data-toggle', 'modal');
           
