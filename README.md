@@ -34,6 +34,9 @@ const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
  ## Installation
 Just put the files in your server or use Free Hosting
 
+ ## API Access: Now Authorization Request
+To prevent misuse of this API or ensure fair usage, please contact us at contato@jailson.es. We can then whitelist your URL or assist you in finding alternative resources to implement your own API.
+
 
 
 ## Free Hosting
