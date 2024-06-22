@@ -10,7 +10,7 @@
 
 ## Demo Screenshots
 
-![Demo Screenshot](https://i.imgur.com/QcbLFzn.jpg)
+![Demo Screenshot](https://i.imgur.com/PJGKsGh.jpg)
 
 
 
