@@ -1,4 +1,4 @@
-const RADIO_NAME = 'Jailson WebRadio';
+const RADIO_NAME = 'Jailson Web Rádio';
 
 // SELECT ARTWORK PROVIDER, ITUNES, DEEZER & SPOTIFY  eg : spotify 
 var API_SERVICE = 'DEEZER';
@@ -7,31 +7,35 @@ var API_SERVICE = 'DEEZER';
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://twj.es/radio_info/';
+const API_URL = 'https://twj.es/radio_info/'
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
 
 let userInteracted = true;
 
-window.onload = function () {
-    var page = new Page;
+window.addEventListener('load', () => { 
+    const page = new Page();
     page.changeTitlePage();
     page.setVolume();
 
-    var player = new Player();
+    const player = new Player();
     player.play();
 
+    // Chama a função getStreamingData imediatamente quando a página carrega
     getStreamingData();
-    // Interval to get streaming data in miliseconds
-    setInterval(function () {
-        getStreamingData();
-    }, 10000);
 
-    var coverArt = document.getElementsByClassName('cover-album')[0];
+    // Define o intervalo para atualizar os dados de streaming a cada 10 segundos
+    const streamingInterval = setInterval(getStreamingData, 10000);
 
-    coverArt.style.height = coverArt.offsetWidth + 'px';
-}
+    // Ajusta a altura da capa do álbum para ser igual à sua largura
+    const coverArt = document.querySelector('.cover-album'); // Use querySelector para selecionar o elemento
+    if (coverArt) { // Adiciona uma verificação para garantir que o elemento exista
+      coverArt.style.height = `${coverArt.offsetWidth}px`;
+    } else {
+      console.warn("Elemento .cover-album não encontrado.");
+    }
+});
 
 // DOM control
 class Page {
@@ -40,235 +44,213 @@ class Page {
             document.title = title;
         };
 
-        this.refreshCurrentSong = function (song, artist) {
-            var currentSong = document.getElementById('currentSong');
-            var currentArtist = document.getElementById('currentArtist');
+        this.refreshCurrentSong = function(song, artist) {
+            const currentSong = document.getElementById('currentSong');
+            const currentArtist = document.getElementById('currentArtist');
+            const maxLength = 30; // Defina o limite máximo de caracteres
+          
+            // Limita o tamanho da string e adiciona "..." se necessário
+            const truncatedSong = song.length > maxLength ? song.substring(0, maxLength) + "..." : song;
+            const truncatedArtist = artist.length > maxLength ? artist.substring(0, maxLength) + "..." : artist;
+          
+            if (truncatedSong !== currentSong.textContent) { 
+              // Esmaecer o conteúdo existente (fade-out)
+              currentSong.classList.add('fade-out');
+              currentArtist.classList.add('fade-out');
+          
+              setTimeout(function() {
+                // Atualizar o conteúdo após o fade-out
+                currentSong.textContent = truncatedSong; 
+                currentArtist.textContent = truncatedArtist;
+                document.getElementById('lyricsSong').textContent = truncatedSong + ' - ' + truncatedArtist;
+          
+                // Esmaecer o novo conteúdo (fade-in)
+                currentSong.classList.remove('fade-out');
+                currentSong.classList.add('fade-in');
+                currentArtist.classList.remove('fade-out');
+                currentArtist.classList.add('fade-in');
+              }, 500); // Ajuste a duração do fade conforme necessário
+          
+              setTimeout(function() {
+                // Remover as classes fade-in após a animação
+                currentSong.classList.remove('fade-in');
+                currentArtist.classList.remove('fade-in');
+              }, 1000); // Ajuste com base na duração do fade
+            }
+        };
+          
+        this.refreshHistoric = async function (info, n) {
+            const historicDiv = document.querySelectorAll('#historicSong article')[n];
+            const songName = document.querySelectorAll('#historicSong article .music-info .song')[n];
+            const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
+            const coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
+            
+            const defaultCoverArt = 'img/cover.png';
+          
+            // Formata caracteres para UTF-8
+            const music = info.song.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+            const artist = info.artist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+          
+            songName.innerHTML = music;
+            artistName.innerHTML = artist;
+          
+            try {
+              const response = await fetch('https://api.streamafrica.net/new.search?query=' + info.artist + ' ' + info.song + '&service=' + API_SERVICE.toLowerCase());
+              const data = await response.json();
+          
+              if (data && data.results && data.results.artwork) {
+                coverHistoric.style.backgroundImage = 'url(' + data.results.artwork + ')';
+              } else {
+                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
+                console.warn("Resposta da API inválida ou dados de artwork ausentes:", data);
+              }
+            } catch (error) {
+              coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
+              console.error("Erro ao buscar dados da API:", error);
+            }
+          
+            // Adiciona/remove classes para animação
+            historicDiv.classList.add('animated', 'slideInRight');
+            setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000); 
+        };
 
-            if (song !== currentSong.innerHTML) {
-                // Animate transition
-                currentSong.className = 'animated flipInY text-uppercase';
-                currentSong.innerHTML = song;
-
-                currentArtist.className = 'animated flipInY text-capitalize';
-                currentArtist.innerHTML = artist;
-
-                // Refresh modal title
-                document.getElementById('lyricsSong').innerHTML = song + ' - ' + artist;
-
-                // Remove animation classes
-                setTimeout(function () {
-                    currentSong.className = 'text-uppercase';
-                    currentArtist.className = 'text-capitalize';
-                }, 2000);
+        this.refreshCover = async function (song = '', artist) {
+            const coverArt = document.getElementById('currentCoverArt');
+            const coverBackground = document.getElementById('bgCover');
+            const defaultCoverArt = 'img/cover.png'; 
+            let urlCoverArt = defaultCoverArt; // Inicializa com a imagem padrão fora do try...catch
+          
+            try {
+              const response = await fetch('https://api.streamafrica.net/new.search?query=' + artist + ' ' + song + '&service=' + API_SERVICE.toLowerCase());
+          
+              if (!response.ok) {
+                throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
+              }
+          
+              const data = await response.json();
+          
+              if (data && data.results && data.results.artwork) {
+                urlCoverArt = data.results.artwork;
+              } else {
+                console.warn("Resposta da API válida, mas dados de artwork ausentes:", data);
+              }
+            } catch (error) {
+              console.error("Erro ao buscar dados da API:", error);
+            }
+          
+            // Aplica a imagem de capa (sempre, mesmo se for a padrão)
+            coverArt.style.backgroundImage = 'url(' + urlCoverArt + ')';
+            coverBackground.style.backgroundImage = 'url(' + urlCoverArt + ')';
+          
+            // Adiciona/remove classes para animação (se necessário)
+            coverArt.classList.add('animated', 'bounceInLeft');
+            setTimeout(() => coverArt.classList.remove('animated', 'bounceInLeft'), 2000);
+          
+            // Atualiza MediaSession (se suportado)
+            if ('mediaSession' in navigator) {
+              const artwork = [
+                { src: urlCoverArt, sizes: '96x96',   type: 'image/png' },
+                { src: urlCoverArt, sizes: '128x128', type: 'image/png' },
+                { src: urlCoverArt, sizes: '192x192', type: 'image/png' },
+                { src: urlCoverArt, sizes: '256x256', type: 'image/png' },
+                { src: urlCoverArt, sizes: '384x384', type: 'image/png' },
+                { src: urlCoverArt, sizes: '512x512', type: 'image/png' },
+              ];
+          
+              navigator.mediaSession.metadata = new MediaMetadata({ title: song, artist: artist, artwork });
             }
         };
 
-        this.refreshHistoric = function (info, n) {
-            var $historicDiv = document.querySelectorAll('#historicSong article');
-            var $songName = document.querySelectorAll('#historicSong article .music-info .song');
-            var $artistName = document.querySelectorAll('#historicSong article .music-info .artist');
+        this.changeVolumeIndicator = function(volume) {
+            document.getElementById('volIndicator').textContent = volume; // Use textContent em vez de innerHTML
           
-            // Imagem padrão definida apenas uma vez
-            const defaultCoverArt = 'img/cover.png'; 
-            let urlCoverArt = defaultCoverArt; // Começa com a imagem padrão
+            if (typeof Storage !== 'undefined') {
+              localStorage.setItem('volume', volume);
+            }
+          };
           
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-              if (this.readyState === 4 && this.status === 200) {
-                var data = JSON.parse(this.responseText);
-                
-                // Verifica se as propriedades existem
-                if (data && data.results && data.results.artwork) { 
-                  urlCoverArt = data.results.artwork;
+        this.setVolume = function() {
+            if (typeof Storage !== 'undefined') {
+              const volumeLocalStorage = localStorage.getItem('volume') || 80; // Operador de coalescência nula (??)
           
-                  // Seleciona o elemento correto
-                  var coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
-                  if (coverHistoric) { // Verifica se o elemento existe
-                    coverHistoric.style.backgroundImage = 'url(' + urlCoverArt + ')';
-                  } else {
-                    console.warn("Elemento cover-historic não encontrado para o índice:", n);
-                  }
-          
-                } else {
-                  console.warn("Resposta da API inválida ou dados de artwork ausentes:", data);
-                  // Mantém a imagem padrão
-                }
-              }
-          
-              // Formatando caracteres para UTF-8
-              var music = info.song.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-              var artist = info.artist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-          
-              $songName[n].innerHTML = music;
-              $artistName[n].innerHTML = artist;
-          
-              // Adiciona classes para animação (se necessário)
-              $historicDiv[n].classList.add('animated', 'slideInRight');
-          
-              setTimeout(function () {
-                for (var j = 0; j < 2; j++) {
-                  $historicDiv[j].classList.remove('animated', 'slideInRight');
-                }
-              }, 2000);
-            };
-          
-            // Requisição com timestamp para evitar cache
-            xhttp.open('GET', 'https://api.streamafrica.net/new.search?query=' + info.artist + ' ' + info.song + '&service=' + API_SERVICE.toLowerCase());
-            xhttp.send();
+              document.getElementById('volume').value = volumeLocalStorage;
+              document.getElementById('volIndicator').textContent = volumeLocalStorage;
+            }
           };
 
-        this.refreshCover = function (song = '', artist) {
-            // Imagem padrão definida apenas uma vez
-            const defaultCoverArt = 'img/cover.png'; 
-            let urlCoverArt = defaultCoverArt; // Começa com a imagem padrão
+        this.refreshLyric = async function (currentSong, currentArtist) {
+            const openLyric = document.getElementsByClassName('lyrics')[0];
+            const modalLyric = document.getElementById('modalLyrics');
+            
+            try {
+              const response = await fetch('https://api.vagalume.com.br/search.php?apikey=' + API_KEY + '&art=' + currentArtist + '&mus=' + currentSong.toLowerCase());
+              const data = await response.json();
           
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-              var coverArt = document.getElementById('currentCoverArt');
-              var coverBackground = document.getElementById('bgCover');
+              if (data.type === 'exact' || data.type === 'aprox') {
+                const lyric = data.mus[0].text;
           
-              // Verifica se a API retornou um resultado válido
-              if (this.readyState === 4 && this.status === 200 && this.responseText.trim() !== '') {
-                var data = JSON.parse(this.responseText);
+                document.getElementById('lyric').textContent = lyric.replace(/\n/g, '<br />'); // Use textContent em vez de innerHTML
+                openLyric.style.opacity = "1";
+                openLyric.setAttribute('data-toggle', 'modal');
           
-                // Verifica se as propriedades existem
-                if (data && data.results && data.results.artwork) { 
-                  urlCoverArt = data.results.artwork; 
-                } else {
-                  console.warn("Resposta da API inválida ou dados de artwork ausentes:", data);
-                  // Mantém a imagem padrão
+                // Esconde o modal caso esteja visível
+                modalLyric.style.display = "none";
+                modalLyric.setAttribute('aria-hidden', 'true');
+                if (document.getElementsByClassName('modal-backdrop')[0]) {
+                  document.getElementsByClassName('modal-backdrop')[0].remove();
                 }
               } else {
-                console.warn("Erro na requisição da API ou resposta vazia.");
-                // Mantém a imagem padrão
+                openLyric.style.opacity = "0.3";
+                openLyric.removeAttribute('data-toggle');
               }
-          
-              // Aplica a imagem de capa (sempre, mesmo se for a padrão)
-              coverArt.style.backgroundImage = 'url(' + urlCoverArt + ')';
-              coverArt.className = 'animated bounceInLeft';
-          
-              coverBackground.style.backgroundImage = 'url(' + urlCoverArt + ')';
-          
-              setTimeout(function () {
-                coverArt.className = '';
-              }, 2000);
-          
-              if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                  title: song,
-                  artist: artist,
-                  artwork: [
-                    { src: urlCoverArt, sizes: '96x96', type: 'image/png' },
-                    { src: urlCoverArt, sizes: '128x128', type: 'image/png' },
-                    { src: urlCoverArt, sizes: '192x192', type: 'image/png' },
-                    { src: urlCoverArt, sizes: '256x256', type: 'image/png' },
-                    { src: urlCoverArt, sizes: '384x384', type: 'image/png' },
-                    { src: urlCoverArt, sizes: '512x512', type: 'image/png' }
-                  ]
-                });
-              }
-            };
-          
-            // Requisição com timestamp para evitar cache
-            xhttp.open('GET', 'https://api.streamafrica.net/new.search?query=' + artist + ' ' + song + '&service=' + API_SERVICE.toLowerCase());
-            xhttp.send();
-        };
-
-        this.changeVolumeIndicator = function (volume) {
-            document.getElementById('volIndicator').innerHTML = volume;
-
-            if (typeof (Storage) !== 'undefined') {
-                localStorage.setItem('volume', volume);
+            } catch (error) {
+              console.error("Erro ao buscar a letra da música:", error);
+              openLyric.style.opacity = "0.3";
+              openLyric.removeAttribute('data-toggle');
             }
-        };
-
-        this.setVolume = function () {
-            if (typeof (Storage) !== 'undefined') {
-                var volumeLocalStorage = (!localStorage.getItem('volume')) ? 80 : localStorage.getItem('volume');
-                document.getElementById('volume').value = volumeLocalStorage;
-                document.getElementById('volIndicator').innerHTML = volumeLocalStorage;
-            }
-        };
-
-        this.refreshLyric = function (currentSong, currentArtist) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState === 4 && this.status === 200) {
-                    var data = JSON.parse(this.responseText);
-
-                    var openLyric = document.getElementsByClassName('lyrics')[0];
-
-                    if (data.type === 'exact' || data.type === 'aprox') {
-                        var lyric = data.mus[0].text;
-
-                        document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
-                        openLyric.style.opacity = "1";
-                        openLyric.setAttribute('data-toggle', 'modal');
-                    } else {
-                        openLyric.style.opacity = "0.3";
-                        openLyric.removeAttribute('data-toggle');
-
-                        var modalLyric = document.getElementById('modalLyrics');
-                        modalLyric.style.display = "none";
-                        modalLyric.setAttribute('aria-hidden', 'true');
-                        (document.getElementsByClassName('modal-backdrop')[0]) ? document.getElementsByClassName('modal-backdrop')[0].remove() : '';
-                    }
-                } else {
-                    document.getElementsByClassName('lyrics')[0].style.opacity = "0.3";
-                    document.getElementsByClassName('lyrics')[0].removeAttribute('data-toggle');
-                }
-            };
-            xhttp.open('GET', 'https://api.vagalume.com.br/search.php?apikey=' + API_KEY + '&art=' + currentArtist + '&mus=' + currentSong.toLowerCase(), true);
-            xhttp.send();
         };
     }
 }
 
 
-function getStreamingData() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-
-        if (this.readyState === 4 && this.status === 200) {
-
-            if(this.response.length === 0) {
-                console.log('%cdebug', 'font-size: 22px')
-            }
-
-            var data = JSON.parse(this.responseText);
-
-            var page = new Page();
-
-            // Formating characters to UTF-8
-            let song = data.currentSong.replace(/&apos;/g, '\'');
-            currentSong = song.replace(/&amp;/g, '&');
-
-            let artist = data.currentArtist.replace(/&apos;/g, '\'');
-            currentArtist = artist.replace(/&amp;/g, '&');
-
-            // Change the title
-            document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
-
-            if (document.getElementById('currentSong').innerHTML !== song) {
-                page.refreshCover(currentSong, currentArtist);
-                page.refreshCurrentSong(currentSong, currentArtist);
-                page.refreshLyric(currentSong, currentArtist);
-
-                for (var i = 0; i < 4; i++) {
-                    page.refreshHistoric(data.songHistory[i], i);
-                }
-            }
-        } 
-    };
-
-    var d = new Date();
-
-    // Requisition with timestamp to prevent cache on mobile devices
-    xhttp.open('GET', API_URL);
-    xhttp.send();
+async function getStreamingData() {
+    try {
+      const response = await fetch(API_URL);
+  
+      if (!response.ok) {
+        throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+  
+      if (data.length === 0) {
+        console.log('%cdebug', 'font-size: 22px'); 
+      } else {
+        const page = new Page();
+  
+        // Formating characters to UTF-8
+        const currentSong = data.currentSong.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+        const currentArtist = data.currentArtist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+  
+        // Change the title
+        document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+  
+        if (document.getElementById('currentSong').innerHTML !== currentSong) {
+          page.refreshCover(currentSong, currentArtist);
+          page.refreshCurrentSong(currentSong, currentArtist);
+          page.refreshLyric(currentSong, currentArtist);
+  
+          for (let i = 0; i < 4; i++) {
+            page.refreshHistoric(data.songHistory[i], i);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados de streaming:", error); 
+    }
 }
 
-//####################################### AUDIO #######################################
+// AUDIO 
 
 
 // Variável global para armazenar as músicas
