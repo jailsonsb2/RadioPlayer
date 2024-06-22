@@ -1,13 +1,13 @@
-const RADIO_NAME = 'Bendición Stereo';
+const RADIO_NAME = 'Jailson WebRadio';
 
 // SELECT ARTWORK PROVIDER, ITUNES, DEEZER & SPOTIFY  eg : spotify 
 var API_SERVICE = 'DEEZER';
 
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
-const URL_STREAMING = 'https://sv2.globalhostlive.com/proxy/bendistereo/stream2';
+const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING
+const API_URL = 'https://twj.es/radio_info/
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
