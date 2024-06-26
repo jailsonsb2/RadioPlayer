@@ -1,18 +1,15 @@
 # HTML5 Icecast/Shoutcast Full Page Radio Player with PWA Support
 
+## Demo Screenshots
+
+![Demo Screenshot](https://i.imgur.com/PJGKsGh.jpg)
+
 * Current song
 * Historic of played songs
 * Cover art of the current song
 * Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
-
-
-## Demo Screenshots
-
-![Demo Screenshot](https://i.imgur.com/PJGKsGh.jpg)
-
-
 
 # Documentation.
 
@@ -37,8 +34,8 @@ Just put the files in your server or use Free Hosting
 
 ## Free Hosting
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/jailsonsb2/RadioPlayer-All-Streams)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/jailsonsb2/RadioPlayer-All-Streams)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/jailsonsb2/RadioPlayer)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/jailsonsb2/RadioPlayer)
 
 ### Progressive Web App (PWA) Support
 
