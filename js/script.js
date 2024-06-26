@@ -47,7 +47,7 @@ class Page {
         this.refreshCurrentSong = function(song, artist) {
             const currentSong = document.getElementById('currentSong');
             const currentArtist = document.getElementById('currentArtist');
-            const maxLength = 30; // Defina o limite máximo de caracteres
+            const maxLength = 50; // Defina o limite máximo de caracteres
           
             // Limita o tamanho da string e adiciona "..." se necessário
             const truncatedSong = song.length > maxLength ? song.substring(0, maxLength) + "..." : song;
