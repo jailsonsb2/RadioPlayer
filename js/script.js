@@ -47,35 +47,31 @@ class Page {
         this.refreshCurrentSong = function(song, artist) {
             const currentSong = document.getElementById('currentSong');
             const currentArtist = document.getElementById('currentArtist');
-            const maxLength = 50; // Defina o limite máximo de caracteres
-          
-            // Limita o tamanho da string e adiciona "..." se necessário
-            const truncatedSong = song.length > maxLength ? song.substring(0, maxLength) + "..." : song;
-            const truncatedArtist = artist.length > maxLength ? artist.substring(0, maxLength) + "..." : artist;
-          
-            if (truncatedSong !== currentSong.textContent) { 
-              // Esmaecer o conteúdo existente (fade-out)
-              currentSong.classList.add('fade-out');
-              currentArtist.classList.add('fade-out');
-          
-              setTimeout(function() {
-                // Atualizar o conteúdo após o fade-out
-                currentSong.textContent = truncatedSong; 
-                currentArtist.textContent = truncatedArtist;
-                document.getElementById('lyricsSong').textContent = truncatedSong + ' - ' + truncatedArtist;
-          
-                // Esmaecer o novo conteúdo (fade-in)
-                currentSong.classList.remove('fade-out');
-                currentSong.classList.add('fade-in');
-                currentArtist.classList.remove('fade-out');
-                currentArtist.classList.add('fade-in');
-              }, 500); // Ajuste a duração do fade conforme necessário
-          
-              setTimeout(function() {
-                // Remover as classes fade-in após a animação
-                currentSong.classList.remove('fade-in');
-                currentArtist.classList.remove('fade-in');
-              }, 1000); // Ajuste com base na duração do fade
+            const lyricsSong = document.getElementById('lyricsSong');
+        
+            if (song !== currentSong.textContent || artist !== currentArtist.textContent) { 
+                // Esmaecer o conteúdo existente (fade-out)
+                currentSong.classList.add('fade-out');
+                currentArtist.classList.add('fade-out');
+        
+                setTimeout(function() {
+                    // Atualizar o conteúdo após o fade-out
+                    currentSong.textContent = song; 
+                    currentArtist.textContent = artist;
+                    lyricsSong.textContent = song + ' - ' + artist;
+        
+                    // Esmaecer o novo conteúdo (fade-in)
+                    currentSong.classList.remove('fade-out');
+                    currentSong.classList.add('fade-in');
+                    currentArtist.classList.remove('fade-out');
+                    currentArtist.classList.add('fade-in');
+                }, 500); 
+        
+                setTimeout(function() {
+                    // Remover as classes fade-in após a animação
+                    currentSong.classList.remove('fade-in');
+                    currentArtist.classList.remove('fade-in');
+                }, 1000); 
             }
         };
           
