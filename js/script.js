@@ -211,40 +211,42 @@ class Page {
 
 
 async function getStreamingData() {
-    try {
-      const response = await fetch(API_URL);
-  
-      if (!response.ok) {
-        throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
-      }
-  
-      const data = await response.json();
-  
-      if (data.length === 0) {
-        console.log('%cdebug', 'font-size: 22px'); 
-      } else {
-        const page = new Page();
-  
-        // Formating characters to UTF-8
-        const currentSong = data.currentSong.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-        const currentArtist = data.currentArtist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-  
-        // Change the title
-        document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
-  
-        if (document.getElementById('currentSong').innerHTML !== currentSong) {
-          page.refreshCover(currentSong, currentArtist);
-          page.refreshCurrentSong(currentSong, currentArtist);
-          page.refreshLyric(currentSong, currentArtist);
-  
-          for (let i = 0; i < 4; i++) {
-            page.refreshHistoric(data.songHistory[i], i);
-          }
+  try {
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+      throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.length === 0) {
+      console.log('%cdebug', 'font-size: 22px'); 
+    } else {
+      const page = new Page();
+
+      // Formatando caracteres para UTF-8
+      const currentSong = data.currentSong.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+      const currentArtist = data.currentArtist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+
+      // Alterando o título
+      document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+
+      if (document.getElementById('currentSong').innerHTML !== currentSong) {
+        page.refreshCover(currentSong, currentArtist);
+        page.refreshCurrentSong(currentSong, currentArtist);
+        page.refreshLyric(currentSong, currentArtist);
+
+        // Iterar apenas sobre o número de elementos presentes em songHistory
+        for (let i = 0; i < data.songHistory.length; i++) {
+          page.refreshHistoric(data.songHistory[i], i);
         }
       }
-    } catch (error) {
-      console.error("Erro ao buscar dados de streaming:", error); 
     }
+  } catch (error) {
+    console.error("Erro ao buscar dados de streaming:", error);
+    alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
+  }
 }
 
 // AUDIO 
