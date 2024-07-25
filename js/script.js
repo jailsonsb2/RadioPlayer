@@ -7,7 +7,7 @@ var API_SERVICE = 'DEEZER';
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://radioplayer.icu/api3.php?url='+URL_STREAMING
+const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
