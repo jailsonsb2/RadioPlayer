@@ -1,8 +1,5 @@
 const RADIO_NAME = 'Jailson Web Rádio';
 
-// SELECT ARTWORK PROVIDER, ITUNES, DEEZER & SPOTIFY  eg : spotify 
-var API_SERVICE = 'DEEZER';
-
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
@@ -13,6 +10,66 @@ const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING
 const API_KEY = "18fe07917957c289983464588aabddfb";
 
 let userInteracted = true;
+
+// Cache para a API do iTunes
+const cache = {};
+
+// Função para alterar o tamanho da imagem do iTunes
+function changeImageSize(url, size) {
+  const parts = url.split("/");
+  const filename = parts.pop();
+  const newFilename = `${size}${filename.substring(filename.lastIndexOf("."))}`;
+  return parts.join("/") + "/" + newFilename;
+}
+
+// Função para buscar dados da API do iTunes
+const getDataFromITunes = async (artist, title, defaultArt, defaultCover) => {
+  let text;
+  if (artist === title) {
+      text = `${title}`;
+  } else {
+      text = `${artist} - ${title}`;
+  }
+  const cacheKey = text.toLowerCase();
+  if (cache[cacheKey]) {
+      return cache[cacheKey];
+  }
+
+  const response = await fetch(`https://itunes.apple.com/search?limit=1&term=${encodeURIComponent(text)}`);
+  if (response.status === 403) {
+      const results = {
+          title,
+          artist,
+          art: defaultArt,
+          cover: defaultCover,
+          stream_url: "#not-found",
+      };
+      return results;
+  }
+  const data = response.ok ? await response.json() : {};
+  if (!data.results || data.results.length === 0) {
+      const results = {
+          title,
+          artist,
+          art: defaultArt,
+          cover: defaultCover,
+          stream_url: "#not-found",
+      };
+      return results;
+  }
+  const itunes = data.results[0];
+  const results = {
+      title: title, // Mantive o título original da transmissão
+      artist: artist, // Mantive o artista original da transmissão
+      thumbnail: itunes.artworkUrl100 || defaultArt,
+      art: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "600x600") : defaultArt,
+      cover: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "1500x1500") : defaultCover,
+      stream_url: "#not-found",
+  };
+  cache[cacheKey] = results;
+  return results;
+};
+
 
 window.addEventListener('load', () => { 
     const page = new Page();
@@ -81,79 +138,66 @@ class Page {
             const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
             const coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
             
-            const defaultCoverArt = 'img/cover.png';
-          
+            const defaultCoverArt = 'img/cover.png'; // Imagem padrão
+        
             // Formata caracteres para UTF-8
-            const music = info.song.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-            const artist = info.artist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+            const music = info.song.replace(/'/g, '\'').replace(/&/g, '&');
+            const artist = info.artist.replace(/'/g, '\'').replace(/&/g, '&');
           
             songName.innerHTML = music;
             artistName.innerHTML = artist;
-          
+        
             try {
-              const response = await fetch('https://api.streamafrica.net/new.search?query=' + info.artist + ' ' + info.song + '&service=' + API_SERVICE.toLowerCase());
-              const data = await response.json();
-          
-              if (data && data.results && data.results.artwork) {
-                coverHistoric.style.backgroundImage = 'url(' + data.results.artwork + ')';
-              } else {
-                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
-                console.warn("Resposta da API inválida ou dados de artwork ausentes:", data);
-              }
+                const data = await getDataFromITunes(artist, music, defaultCoverArt, defaultCoverArt);
+        
+                // Usa a URL da capa retornada pela API do iTunes (ou a padrão)
+                coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
             } catch (error) {
-              coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
-              console.error("Erro ao buscar dados da API:", error);
+                console.error("Erro ao buscar dados da API do iTunes:", error);
+                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
             }
-          
+        
             // Adiciona/remove classes para animação
             historicDiv.classList.add('animated', 'slideInRight');
             setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000); 
         };
-
+        
         this.refreshCover = async function (song = '', artist) {
             const coverArt = document.getElementById('currentCoverArt');
             const coverBackground = document.getElementById('bgCover');
             const defaultCoverArt = 'img/cover.png'; 
-            let urlCoverArt = defaultCoverArt; // Inicializa com a imagem padrão fora do try...catch
-          
+        
             try {
-              const response = await fetch('https://api.streamafrica.net/new.search?query=' + artist + ' ' + song + '&service=' + API_SERVICE.toLowerCase());
-          
-              if (!response.ok) {
-                throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
-              }
-          
-              const data = await response.json();
-          
-              if (data && data.results && data.results.artwork) {
-                urlCoverArt = data.results.artwork;
-              } else {
-                console.warn("Resposta da API válida, mas dados de artwork ausentes:", data);
-              }
+                const data = await getDataFromITunes(artist, song, defaultCoverArt, defaultCoverArt);
+        
+                // Aplica a imagem de capa (sempre, mesmo se for a padrão)
+                coverArt.style.backgroundImage = 'url(' + data.art + ')';
+                coverBackground.style.backgroundImage = 'url(' + data.cover + ')';
+        
+                // Adiciona/remove classes para animação (se necessário)
+                coverArt.classList.add('animated', 'bounceInLeft');
+                setTimeout(() => coverArt.classList.remove('animated', 'bounceInLeft'), 2000);
+              
+                // Atualiza MediaSession (se suportado)
+                if ('mediaSession' in navigator) {
+                    const artwork = [
+                        { src: data.art, sizes: '96x96',   type: 'image/png' },
+                        { src: data.art, sizes: '128x128', type: 'image/png' },
+                        { src: data.art, sizes: '192x192', type: 'image/png' },
+                        { src: data.art, sizes: '256x256', type: 'image/png' },
+                        { src: data.art, sizes: '384x384', type: 'image/png' },
+                        { src: data.art, sizes: '512x512', type: 'image/png' },
+                    ];
+                
+                    navigator.mediaSession.metadata = new MediaMetadata({ 
+                        title: song, 
+                        artist: artist, 
+                        artwork 
+                    });
+                }
             } catch (error) {
-              console.error("Erro ao buscar dados da API:", error);
-            }
-          
-            // Aplica a imagem de capa (sempre, mesmo se for a padrão)
-            coverArt.style.backgroundImage = 'url(' + urlCoverArt + ')';
-            coverBackground.style.backgroundImage = 'url(' + urlCoverArt + ')';
-          
-            // Adiciona/remove classes para animação (se necessário)
-            coverArt.classList.add('animated', 'bounceInLeft');
-            setTimeout(() => coverArt.classList.remove('animated', 'bounceInLeft'), 2000);
-          
-            // Atualiza MediaSession (se suportado)
-            if ('mediaSession' in navigator) {
-              const artwork = [
-                { src: urlCoverArt, sizes: '96x96',   type: 'image/png' },
-                { src: urlCoverArt, sizes: '128x128', type: 'image/png' },
-                { src: urlCoverArt, sizes: '192x192', type: 'image/png' },
-                { src: urlCoverArt, sizes: '256x256', type: 'image/png' },
-                { src: urlCoverArt, sizes: '384x384', type: 'image/png' },
-                { src: urlCoverArt, sizes: '512x512', type: 'image/png' },
-              ];
-          
-              navigator.mediaSession.metadata = new MediaMetadata({ title: song, artist: artist, artwork });
+                console.error("Erro ao buscar dados da API do iTunes:", error);
+                // ... (lógica para lidar com o erro)
             }
         };
 
@@ -226,8 +270,8 @@ async function getStreamingData() {
       const page = new Page();
 
       // Formatando caracteres para UTF-8
-      const currentSong = data.currentSong.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
-      const currentArtist = data.currentArtist.replace(/&apos;/g, '\'').replace(/&amp;/g, '&');
+      const currentSong = data.currentSong.replace(/'/g, '\'').replace(/&/g, '&');
+      const currentArtist = data.currentArtist.replace(/'/g, '\'').replace(/&/g, '&');
 
       // Alterando o título
       document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
