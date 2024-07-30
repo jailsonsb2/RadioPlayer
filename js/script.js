@@ -72,26 +72,32 @@ const getDataFromITunes = async (artist, title, defaultArt, defaultCover) => {
 
 
 window.addEventListener('load', () => { 
-    const page = new Page();
-    page.changeTitlePage();
-    page.setVolume();
+  const page = new Page();
+  page.changeTitlePage();
+  page.setVolume();
 
-    const player = new Player();
-    player.play();
+  const player = new Player();
+  player.play();
 
-    // Chama a função getStreamingData imediatamente quando a página carrega
-    getStreamingData();
+  // Chama a função getStreamingData imediatamente quando a página carrega
+  getStreamingData();
 
-    // Define o intervalo para atualizar os dados de streaming a cada 10 segundos
-    const streamingInterval = setInterval(getStreamingData, 10000);
+  // Define o intervalo para atualizar os dados de streaming a cada 10 segundos
+  const streamingInterval = setInterval(getStreamingData, 5000);
 
-    // Ajusta a altura da capa do álbum para ser igual à sua largura
-    const coverArt = document.querySelector('.cover-album'); // Use querySelector para selecionar o elemento
-    if (coverArt) { // Adiciona uma verificação para garantir que o elemento exista
-      coverArt.style.height = `${coverArt.offsetWidth}px`;
-    } else {
-      console.warn("Elemento .cover-album não encontrado.");
-    }
+  // Ajusta a altura da capa do álbum para ser igual à sua largura
+  const coverArt = document.querySelector('.cover-album'); 
+  if (coverArt) {
+    coverArt.style.height = `${coverArt.offsetWidth}px`;
+  } else {
+    console.warn("Elemento .cover-album não encontrado.");
+  }
+
+  // Limpa o histórico inicial (remove os elementos "No Song", "No Artist")
+  const historicDiv = document.getElementById('historicSong');
+  while (historicDiv.children.length > 0) {
+    historicDiv.removeChild(historicDiv.firstChild);
+  }
 });
 
 // DOM control
@@ -133,33 +139,60 @@ class Page {
         };
           
         this.refreshHistoric = async function (info, n) {
-            const historicDiv = document.querySelectorAll('#historicSong article')[n];
-            const songName = document.querySelectorAll('#historicSong article .music-info .song')[n];
-            const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
-            const coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
-            
-            const defaultCoverArt = 'img/cover.png'; // Imagem padrão
+            // Seleciona o container do histórico
+            const historicDiv = document.getElementById('historicSong');
         
             // Formata caracteres para UTF-8
             const music = info.song.replace(/'/g, '\'').replace(/&/g, '&');
             const artist = info.artist.replace(/'/g, '\'').replace(/&/g, '&');
           
-            songName.innerHTML = music;
-            artistName.innerHTML = artist;
-        
             try {
-                const data = await getDataFromITunes(artist, music, defaultCoverArt, defaultCoverArt);
+                const data = await getDataFromITunes(artist, music, 'img/cover.png', 'img/cover.png'); // Imagem padrão
         
-                // Usa a URL da capa retornada pela API do iTunes (ou a padrão)
-                coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
+                // Cria um Document Fragment
+                const fragment = document.createDocumentFragment();
+        
+                // Cria um novo elemento 'article'
+                const historicArticle = document.createElement('article');
+                historicArticle.classList.add('col-12', 'col-md-6'); // Adiciona classes para o layout
+        
+                // Define o HTML interno do novo elemento 'article'
+                historicArticle.innerHTML = `
+                    <div class="cover-historic" style="background-image: url(${data.art || 'img/cover.png'})"></div>
+                    <div class="music-info">
+                        <div class="song">${music}</div>
+                        <div class="artist">${artist}</div>
+                    </div>
+                `;
+        
+                // Adiciona o novo 'article' ao Document Fragment
+                fragment.appendChild(historicArticle);
+        
+                // Adiciona o Document Fragment ao DOM
+                historicDiv.appendChild(fragment);
+        
+                // Adiciona/remove classes para animação
+                historicArticle.classList.add('animated', 'slideInRight');
+                setTimeout(() => historicArticle.classList.remove('animated', 'slideInRight'), 2000); 
+        
+                // Limita o histórico a 4 músicas
+                while (historicDiv.children.length > 4) {
+                  historicDiv.removeChild(historicDiv.firstChild); // Remove o primeiro elemento
+                }
             } catch (error) {
                 console.error("Erro ao buscar dados da API do iTunes:", error);
-                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
+                // Se houver erro, pode criar um elemento 'article' com a imagem padrão e uma mensagem
+                const historicArticle = document.createElement('article');
+                historicArticle.classList.add('col-12', 'col-md-6');
+                historicArticle.innerHTML = `
+                    <div class="cover-historic" style="background-image: url('img/cover.png')"></div>
+                    <div class="music-info">
+                        <div class="song">Erro ao carregar a música</div>
+                        <div class="artist">Erro ao carregar o artista</div>
+                    </div>
+                `;
+                historicDiv.appendChild(historicArticle);
             }
-        
-            // Adiciona/remove classes para animação
-            historicDiv.classList.add('animated', 'slideInRight');
-            setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000); 
         };
         
         this.refreshCover = async function (song = '', artist) {
@@ -254,6 +287,10 @@ class Page {
 }
 
 
+// Variáveis para armazenar a última música e artista
+let lastSong = "";
+let lastArtist = "";
+
 async function getStreamingData() {
   try {
     const response = await fetch(API_URL);
@@ -273,15 +310,25 @@ async function getStreamingData() {
       const currentSong = data.currentSong.replace(/'/g, '\'').replace(/&/g, '&');
       const currentArtist = data.currentArtist.replace(/'/g, '\'').replace(/&/g, '&');
 
-      // Alterando o título
-      document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+      // Verifica se a música ou o artista mudaram
+      if (currentSong !== lastSong || currentArtist !== lastArtist) {
+        // Atualiza as últimas música e artista
+        lastSong = currentSong;
+        lastArtist = currentArtist;
 
-      if (document.getElementById('currentSong').innerHTML !== currentSong) {
+        // Alterando o título
+        document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+  
+        // Atualiza o DOM apenas se a música ou artista mudarem
         page.refreshCover(currentSong, currentArtist);
         page.refreshCurrentSong(currentSong, currentArtist);
         page.refreshLyric(currentSong, currentArtist);
 
-        // Iterar apenas sobre o número de elementos presentes em songHistory
+        // Limpa o histórico anterior antes de adicionar novos itens
+        const historicDiv = document.getElementById('historicSong');
+        historicDiv.innerHTML = ''; // Limpa o conteúdo
+
+        // Iterar sobre o histórico de músicas
         for (let i = 0; i < data.songHistory.length; i++) {
           page.refreshHistoric(data.songHistory[i], i);
         }
