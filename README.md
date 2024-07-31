@@ -13,6 +13,14 @@
 
 # Documentation.
 
+**Important:** This version of the player uses a new API to retrieve radio information. Ensure you update your `script.js` file with the new JavaScript code.
+
+## API and Player Setup
+
+ **API:** You'll need an API that provides radio information, including the current song, song history, album art, and other relevant data. This API should have two endpoints:
+   - `/get_stream_title/`: This endpoint takes the radio URL as a parameter (`url`) and updates the song history and the last played song in the database.
+   - `/radio_info/`: This endpoint takes the radio URL as a parameter (`radio_url`) and returns a JSON containing the last played song and the song history.
+
 Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-All-Streams/blob/main/js/script.js) file and edit the lines Below.
 
 ```javascript
