@@ -11,7 +11,7 @@
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
 
-# Installation.
+## Documentation.
 
 Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-All-Streams/blob/main/js/script.js) file and edit the lines Below.
 
