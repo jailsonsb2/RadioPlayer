@@ -270,8 +270,8 @@ async function getStreamingData() {
       const page = new Page();
 
       // Formatando caracteres para UTF-8
-      const currentSong = data.currentSong.replace(/'/g, '\'').replace(/&/g, '&');
-      const currentArtist = data.currentArtist.replace(/'/g, '\'').replace(/&/g, '&');
+      const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
+      const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
 
       // Alterando o título
       document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
