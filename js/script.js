@@ -132,36 +132,30 @@ class Page {
             }
         };
           
-        this.refreshHistoric = async function (info, n) {
+        this.refreshHistoric = async function(info, n) {
             const historicDiv = document.querySelectorAll('#historicSong article')[n];
             const songName = document.querySelectorAll('#historicSong article .music-info .song')[n];
             const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
             const coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
-            
-            const defaultCoverArt = 'img/cover.png'; // Imagem padrão
-        
-            // Formata caracteres para UTF-8
-            const music = info.song.replace(/'/g, '\'').replace(/&/g, '&');
-            const artist = info.artist.replace(/'/g, '\'').replace(/&/g, '&');
           
-            songName.innerHTML = music;
-            artistName.innerHTML = artist;
-        
+            const defaultCoverArt = 'img/cover.png';
+          
+            // Acessa as propriedades corretas do objeto 'info'
+            songName.innerHTML = info.title; 
+            artistName.innerHTML = info.artist; 
+          
             try {
-                const data = await getDataFromITunes(artist, music, defaultCoverArt, defaultCoverArt);
-        
-                // Usa a URL da capa retornada pela API do iTunes (ou a padrão)
-                coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
+              const data = await getDataFromITunes(info.artist, info.title, defaultCoverArt, defaultCoverArt);
+              coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
             } catch (error) {
-                console.error("Erro ao buscar dados da API do iTunes:", error);
-                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
+              console.error("Erro ao buscar dados da API do iTunes:", error);
+              coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
             }
-        
-            // Adiciona/remove classes para animação
+          
             historicDiv.classList.add('animated', 'slideInRight');
-            setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000); 
+            setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000);
         };
-        
+                
         this.refreshCover = async function (song = '', artist) {
             const coverArt = document.getElementById('currentCoverArt');
             const coverBackground = document.getElementById('bgCover');
@@ -263,28 +257,20 @@ async function getStreamingData() {
     }
 
     const data = await response.json();
+    const page = new Page();
 
-    if (data.length === 0) {
-      console.log('%cdebug', 'font-size: 22px'); 
-    } else {
-      const page = new Page();
+    const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
+    const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
 
-      // Formatando caracteres para UTF-8
-      const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
-      const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
+    document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
 
-      // Alterando o título
-      document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+    if (document.getElementById('currentSong').innerHTML !== currentSong) {
+      page.refreshCover(currentSong, currentArtist);
+      page.refreshCurrentSong(currentSong, currentArtist);
+      page.refreshLyric(currentSong, currentArtist);
 
-      if (document.getElementById('currentSong').innerHTML !== currentSong) {
-        page.refreshCover(currentSong, currentArtist);
-        page.refreshCurrentSong(currentSong, currentArtist);
-        page.refreshLyric(currentSong, currentArtist);
-
-        // Iterar apenas sobre o número de elementos presentes em songHistory
-        for (let i = 0; i < data.songHistory.length; i++) {
-          page.refreshHistoric(data.songHistory[i], i);
-        }
+      for (let i = 0; i < data.song_history.length; i++) {
+        page.refreshHistoric(data.song_history[i].song, i); 
       }
     }
   } catch (error) {
