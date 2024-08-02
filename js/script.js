@@ -269,7 +269,7 @@ async function getStreamingData() {
       page.refreshCurrentSong(currentSong, currentArtist);
       page.refreshLyric(currentSong, currentArtist);
 
-      for (let i = 0; i < data.song_history.length; i++) {
+      for (let i = 1; i < data.song_history.length; i++) {
         page.refreshHistoric(data.song_history[i].song, i); 
       }
     }
