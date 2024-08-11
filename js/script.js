@@ -275,7 +275,7 @@ async function getStreamingData() {
     }
   } catch (error) {
     console.error("Erro ao buscar dados de streaming:", error);
-    alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
+    //alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
   }
 }
 
