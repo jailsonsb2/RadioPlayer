@@ -4,7 +4,8 @@ const RADIO_NAME = 'Jailson Web Rádio';
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING
+const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING;
+const FALLBACK_API_URL = 'https://api-v2.streamafrica.net/icyv2?url=' + URL_STREAMING;
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
@@ -148,7 +149,7 @@ class Page {
               const data = await getDataFromITunes(info.artist, info.song, defaultCoverArt, defaultCoverArt);
               coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
             } catch (error) {
-              console.error("Erro ao buscar dados da API do iTunes:", error);
+              console.log("Erro ao buscar dados da API do iTunes:", error);
               coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
             }
           
@@ -190,7 +191,7 @@ class Page {
                     });
                 }
             } catch (error) {
-                console.error("Erro ao buscar dados da API do iTunes:", error);
+                console.log("Erro ao buscar dados da API do iTunes:", error);
                 // ... (lógica para lidar com o erro)
             }
         };
@@ -239,7 +240,7 @@ class Page {
                 openLyric.removeAttribute('data-toggle');
               }
             } catch (error) {
-              console.error("Erro ao buscar a letra da música:", error);
+              console.log("Erro ao buscar a letra da música:", error);
               openLyric.style.opacity = "0.3";
               openLyric.removeAttribute('data-toggle');
             }
@@ -250,49 +251,66 @@ class Page {
 
 async function getStreamingData() {
   try {
-    const response = await fetch(API_URL);
+    // Tenta buscar dados da API principal
+    let data = await fetchStreamingData(API_URL); 
 
-    if (!response.ok) {
-      throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
+    // Se a API principal falhar, tenta buscar dados da API de fallback
+    if (!data) {
+      data = await fetchStreamingData(FALLBACK_API_URL);
     }
 
-    const data = await response.json();
-    const page = new Page();
+    if (data) {
+      const page = new Page();
+      const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
+      const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
 
-    const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
-    const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
+      document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
 
-    document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+      if (document.getElementById('currentSong').innerHTML !== currentSong) {
+        page.refreshCover(currentSong, currentArtist);
+        page.refreshCurrentSong(currentSong, currentArtist);
+        page.refreshLyric(currentSong, currentArtist);
 
-    if (document.getElementById('currentSong').innerHTML !== currentSong) {
-      page.refreshCover(currentSong, currentArtist);
-      page.refreshCurrentSong(currentSong, currentArtist);
-      page.refreshLyric(currentSong, currentArtist);
+        // Atualiza o histórico de músicas (ignorando a primeira música)
+        const historicContainer = document.getElementById('historicSong');
+        historicContainer.innerHTML = ''; 
 
-      // Atualiza o histórico de músicas (ignorando a primeira música)
-      const historicContainer = document.getElementById('historicSong');
-      // Limpa o histórico anterior
-      historicContainer.innerHTML = ''; 
-
-      // Adiciona as músicas do histórico (a partir da segunda música)
-      for (let i = 1; i < data.history.length; i++) { 
-        const songInfo = data.history[i];
-        const article = document.createElement('article');
-        article.classList.add('col-12', 'col-md-6'); // Adicione classes de grid do Bootstrap
-        article.innerHTML = `
-          <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
-          <div class="music-info">
-            <p class="song">${songInfo.song}</p>
-            <p class="artist">${songInfo.artist}</p>
-          </div>
-        `;
-        historicContainer.appendChild(article);
-        page.refreshHistoric(songInfo, i - 1); // Chama a função para atualizar a informação
+        // Adiciona as músicas do histórico (a partir da segunda música)
+        for (let i = 1; i < data.history.length; i++) { 
+          const songInfo = data.history[i];
+          const article = document.createElement('article');
+          article.classList.add('col-12', 'col-md-6'); // Adicione classes de grid do Bootstrap
+          article.innerHTML = `
+            <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
+            <div class="music-info">
+              <p class="song">${songInfo.song}</p>
+              <p class="artist">${songInfo.artist}</p>
+            </div>
+          `;
+          historicContainer.appendChild(article);
+          page.refreshHistoric(songInfo, i - 1); // Chama a função para atualizar a informação
+        }
       }
     }
   } catch (error) {
     console.log("Erro ao buscar dados de streaming:", error);
     //alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
+  }
+}
+
+// Função para buscar dados de streaming de uma API específica
+async function fetchStreamingData(apiUrl) {
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`Erro na requisição da API: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log("Erro ao buscar dados de streaming da API:", error);
+    return null; // Retorna null em caso de erro
   }
 }
 
