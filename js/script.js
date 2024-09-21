@@ -141,11 +141,11 @@ class Page {
             const defaultCoverArt = 'img/cover.png';
           
             // Acessa as propriedades corretas do objeto 'info'
-            songName.innerHTML = info.title; 
+            songName.innerHTML = info.song; 
             artistName.innerHTML = info.artist; 
           
             try {
-              const data = await getDataFromITunes(info.artist, info.title, defaultCoverArt, defaultCoverArt);
+              const data = await getDataFromITunes(info.artist, info.song, defaultCoverArt, defaultCoverArt);
               coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
             } catch (error) {
               console.error("Erro ao buscar dados da API do iTunes:", error);
@@ -269,12 +269,27 @@ async function getStreamingData() {
       page.refreshCurrentSong(currentSong, currentArtist);
       page.refreshLyric(currentSong, currentArtist);
 
-      for (let i = 1; i < data.song_history.length; i++) { 
-        page.refreshHistoric(data.song_history[i].song, i - 1); 
-      }
+      // Atualiza o histórico de músicas
+      const historicContainer = document.getElementById('historicSong');
+      // Limpa o histórico anterior
+      historicContainer.innerHTML = ''; 
+
+      // Adiciona as músicas do histórico
+      data.history.forEach((songInfo, index) => {
+        const article = document.createElement('article');
+        article.innerHTML = `
+          <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
+          <div class="music-info">
+            <p class="song">${songInfo.song}</p>
+            <p class="artist">${songInfo.artist}</p>
+          </div>
+        `;
+        historicContainer.appendChild(article);
+        page.refreshHistoric(songInfo, index); // Chama a função para atualizar a informação
+      });
     }
   } catch (error) {
-    console.error("Erro ao buscar dados de streaming:", error);
+    console.log("Erro ao buscar dados de streaming:", error);
     //alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
   }
 }
@@ -457,8 +472,7 @@ document.addEventListener('keydown', function (event) {
             page.changeVolumeIndicator(volumeValue * 10);
             break;
     }
-});
-
+}); 
 
 function intToDecimal(vol) {
     return vol / 100;
@@ -466,4 +480,4 @@ function intToDecimal(vol) {
 
 function decimalToInt(vol) {
     return vol * 100;
-}
+} 
