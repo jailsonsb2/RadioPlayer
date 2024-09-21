@@ -15,63 +15,6 @@ let userInteracted = true;
 // Cache para a API do iTunes
 const cache = {};
 
-// Função para alterar o tamanho da imagem do iTunes
-function changeImageSize(url, size) {
-  const parts = url.split("/");
-  const filename = parts.pop();
-  const newFilename = `${size}${filename.substring(filename.lastIndexOf("."))}`;
-  return parts.join("/") + "/" + newFilename;
-}
-
-// Função para buscar dados da API do iTunes
-const getDataFromITunes = async (artist, title, defaultArt, defaultCover) => {
-  let text;
-  if (artist === title) {
-      text = `${title}`;
-  } else {
-      text = `${artist} - ${title}`;
-  }
-  const cacheKey = text.toLowerCase();
-  if (cache[cacheKey]) {
-      return cache[cacheKey];
-  }
-
-  const response = await fetch(`https://itunes.apple.com/search?limit=1&term=${encodeURIComponent(text)}`);
-  if (response.status === 403) {
-      const results = {
-          title,
-          artist,
-          art: defaultArt,
-          cover: defaultCover,
-          stream_url: "#not-found",
-      };
-      return results;
-  }
-  const data = response.ok ? await response.json() : {};
-  if (!data.results || data.results.length === 0) {
-      const results = {
-          title,
-          artist,
-          art: defaultArt,
-          cover: defaultCover,
-          stream_url: "#not-found",
-      };
-      return results;
-  }
-  const itunes = data.results[0];
-  const results = {
-      title: title, // Mantive o título original da transmissão
-      artist: artist, // Mantive o artista original da transmissão
-      thumbnail: itunes.artworkUrl100 || defaultArt,
-      art: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "600x600") : defaultArt,
-      cover: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "1500x1500") : defaultCover,
-      stream_url: "#not-found",
-  };
-  cache[cacheKey] = results;
-  return results;
-};
-
-
 window.addEventListener('load', () => { 
     const page = new Page();
     page.changeTitlePage();
@@ -190,6 +133,8 @@ class Page {
                         artwork 
                     });
                 }
+              // Atualiza a cor de fundo do #bgCover
+              coverBackground.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; 
             } catch (error) {
                 console.log("Erro ao buscar dados da API do iTunes:", error);
                 // ... (lógica para lidar com o erro)
@@ -313,6 +258,62 @@ async function fetchStreamingData(apiUrl) {
     return null; // Retorna null em caso de erro
   }
 }
+
+// Função para alterar o tamanho da imagem do iTunes
+function changeImageSize(url, size) {
+  const parts = url.split("/");
+  const filename = parts.pop();
+  const newFilename = `${size}${filename.substring(filename.lastIndexOf("."))}`;
+  return parts.join("/") + "/" + newFilename;
+}
+
+// Função para buscar dados da API do iTunes
+const getDataFromITunes = async (artist, title, defaultArt, defaultCover) => {
+  let text;
+  if (artist === title) {
+      text = `${title}`;
+  } else {
+      text = `${artist} - ${title}`;
+  }
+  const cacheKey = text.toLowerCase();
+  if (cache[cacheKey]) {
+      return cache[cacheKey];
+  }
+
+  const response = await fetch(`https://itunes.apple.com/search?limit=1&term=${encodeURIComponent(text)}`);
+  if (response.status === 403) {
+      const results = {
+          title,
+          artist,
+          art: defaultArt,
+          cover: defaultCover,
+          stream_url: "#not-found",
+      };
+      return results;
+  }
+  const data = response.ok ? await response.json() : {};
+  if (!data.results || data.results.length === 0) {
+      const results = {
+          title,
+          artist,
+          art: defaultArt,
+          cover: defaultCover,
+          stream_url: "#not-found",
+      };
+      return results;
+  }
+  const itunes = data.results[0];
+  const results = {
+      title: title, // Mantive o título original da transmissão
+      artist: artist, // Mantive o artista original da transmissão
+      thumbnail: itunes.artworkUrl100 || defaultArt,
+      art: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "600x600") : defaultArt,
+      cover: itunes.artworkUrl100 ? changeImageSize(itunes.artworkUrl100, "1500x1500") : defaultCover,
+      stream_url: "#not-found",
+  };
+  cache[cacheKey] = results;
+  return results;
+};
 
 // AUDIO 
 
