@@ -10,6 +10,7 @@
 * Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
+* Added automatic search in alternative api in case of error
 
 ## Documentation.
 
