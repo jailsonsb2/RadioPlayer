@@ -35,7 +35,6 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center 20%;
-    background-color: rgba(0, 0, 0, 0.6);
     filter: blur(20px);
     -webkit-filter: blur(20px);
     transition: all .5s linear;
@@ -48,7 +47,7 @@ body {
     min-width: 100%;
     min-height: 100%;
     position: absolute;
-     background-color: rgba(0,0,0,0.0);
+     background-color: rgba(0,0,0,0.5);
     z-index: 2;
 }
 
