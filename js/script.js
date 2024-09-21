@@ -269,13 +269,14 @@ async function getStreamingData() {
       page.refreshCurrentSong(currentSong, currentArtist);
       page.refreshLyric(currentSong, currentArtist);
 
-      // Atualiza o histórico de músicas
+      // Atualiza o histórico de músicas (ignorando a primeira música)
       const historicContainer = document.getElementById('historicSong');
       // Limpa o histórico anterior
       historicContainer.innerHTML = ''; 
 
-      // Adiciona as músicas do histórico
-      data.history.forEach((songInfo, index) => {
+      // Adiciona as músicas do histórico (a partir da segunda música)
+      for (let i = 1; i < data.history.length; i++) { 
+        const songInfo = data.history[i];
         const article = document.createElement('article');
         article.innerHTML = `
           <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
@@ -285,8 +286,8 @@ async function getStreamingData() {
           </div>
         `;
         historicContainer.appendChild(article);
-        page.refreshHistoric(songInfo, index); // Chama a função para atualizar a informação
-      });
+        page.refreshHistoric(songInfo, i - 1); // Chama a função para atualizar a informação
+      }
     }
   } catch (error) {
     console.log("Erro ao buscar dados de streaming:", error);
