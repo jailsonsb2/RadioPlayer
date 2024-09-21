@@ -278,6 +278,7 @@ async function getStreamingData() {
       for (let i = 1; i < data.history.length; i++) { 
         const songInfo = data.history[i];
         const article = document.createElement('article');
+        article.classList.add('col-12', 'col-md-6'); // Adicione classes de grid do Bootstrap
         article.innerHTML = `
           <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
           <div class="music-info">
