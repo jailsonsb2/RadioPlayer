@@ -76,7 +76,7 @@ class Page {
             }
         };
           
-        this.refreshHistoric = async function(info, n) {
+       this.refreshHistoric = async function(info, n) {
             const historicDiv = document.querySelectorAll('#historicSong article')[n];
             const songName = document.querySelectorAll('#historicSong article .music-info .song')[n];
             const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
@@ -84,12 +84,25 @@ class Page {
           
             const defaultCoverArt = 'img/cover.png';
           
-            // Acessa as propriedades corretas do objeto 'info'
-            songName.innerHTML = info.song; 
-            artistName.innerHTML = info.artist; 
+            // Verifica se 'info.song' é um objeto (formato novo) ou string (formato antigo)
+            const songTitle = info.song && typeof info.song === 'object' 
+              ? info.song.title 
+              : info.song 
+                ? info.song 
+                : "Desconhecido"; 
+          
+            // Verifica se 'info.artist' é um objeto (formato novo) ou string (formato antigo)
+            const songArtist = info.artist && typeof info.artist === 'object' 
+              ? info.artist.title 
+              : info.artist 
+                ? info.artist 
+                : "Desconhecido"; 
+          
+            songName.innerHTML = songTitle; 
+            artistName.innerHTML = songArtist; 
           
             try {
-              const data = await getDataFromITunes(info.artist, info.song, defaultCoverArt, defaultCoverArt);
+              const data = await getDataFromITunes(songArtist, songTitle, defaultCoverArt, defaultCoverArt);
               coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
             } catch (error) {
               console.log("Erro ao buscar dados da API do iTunes:", error);
@@ -197,7 +210,7 @@ class Page {
 async function getStreamingData() {
   try {
     // Tenta buscar dados da API principal
-    let data = await fetchStreamingData(API_URL); 
+    let data = await fetchStreamingData(API_URL);
 
     // Se a API principal falhar, tenta buscar dados da API de fallback
     if (!data) {
@@ -206,40 +219,48 @@ async function getStreamingData() {
 
     if (data) {
       const page = new Page();
-      const currentSong = data.song.replace(/'/g, '\'').replace(/&/g, '&');
-      const currentArtist = data.artist.replace(/'/g, '\'').replace(/&/g, '&');
 
-      document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
+      // Obtém o array de histórico, seja ele 'history' ou 'song_history'
+      const historyArray = data.history || data.song_history;
 
-      if (document.getElementById('currentSong').innerHTML !== currentSong) {
-        page.refreshCover(currentSong, currentArtist);
-        page.refreshCurrentSong(currentSong, currentArtist);
-        page.refreshLyric(currentSong, currentArtist);
+      // Verifica se o formato do dado atual é um objeto ou uma string
+      const currentSong = typeof data.song === 'object' ? data.song.title : data.song;
+      const currentArtist = typeof data.artist === 'object' ? data.artist.title : data.artist;
+
+      // Ajusta caracteres especiais no título e artista
+      const safeCurrentSong = (currentSong || "").replace(/'/g, "'").replace(/&/g, "&");
+      const safeCurrentArtist = (currentArtist || "").replace(/'/g, "'").replace(/&/g, "&");
+
+      document.title = safeCurrentSong + ' - ' + safeCurrentArtist + ' | ' + RADIO_NAME;
+
+      if (document.getElementById('currentSong').innerHTML !== safeCurrentSong) {
+        page.refreshCover(safeCurrentSong, safeCurrentArtist);
+        page.refreshCurrentSong(safeCurrentSong, safeCurrentArtist);
+        page.refreshLyric(safeCurrentSong, safeCurrentArtist);
 
         // Atualiza o histórico de músicas (ignorando a primeira música)
         const historicContainer = document.getElementById('historicSong');
-        historicContainer.innerHTML = ''; 
+        historicContainer.innerHTML = '';
 
         // Adiciona as músicas do histórico (a partir da segunda música)
-        for (let i = 1; i < data.history.length; i++) { 
-          const songInfo = data.history[i];
+        for (let i = 1; i < historyArray.length; i++) {
+          const songInfo = historyArray[i];
           const article = document.createElement('article');
-          article.classList.add('col-12', 'col-md-6'); // Adicione classes de grid do Bootstrap
+          article.classList.add('col-12', 'col-md-6');
           article.innerHTML = `
             <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
             <div class="music-info">
-              <p class="song">${songInfo.song}</p>
-              <p class="artist">${songInfo.artist}</p>
+              <p class="song">${songInfo.song || songInfo.song.title || "Desconhecido"}</p>
+              <p class="artist">${songInfo.artist || songInfo.song.artist || "Desconhecido"}</p>
             </div>
           `;
           historicContainer.appendChild(article);
-          page.refreshHistoric(songInfo, i - 1); // Chama a função para atualizar a informação
+          page.refreshHistoric(songInfo, i - 1);
         }
       }
     }
   } catch (error) {
     console.log("Erro ao buscar dados de streaming:", error);
-    //alert("Ocorreu um erro ao buscar informações da música. Por favor, tente novamente mais tarde."); 
   }
 }
 
