@@ -244,7 +244,7 @@ async function getStreamingData() {
                       }))
                     : data.history;
 
-                for (let i = 1; i < historyArray.length; i++) {
+                for (let i = 0; i < historyArray.length; i++) {
                     const songInfo = historyArray[i];
                     const article = document.createElement("article");
                     article.classList.add("col-12", "col-md-6");
