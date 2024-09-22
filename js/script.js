@@ -77,33 +77,42 @@ class Page {
             }
         };
 
-        this.refreshHistoric = async function (info, n) {
-            const historicDiv = document.querySelectorAll("#historicSong article")[n];
-            const songName = document.querySelectorAll("#historicSong article .music-info .song")[n];
-            const artistName = document.querySelectorAll("#historicSong article .music-info .artist")[n];
-            const coverHistoric = document.querySelectorAll("#historicSong article .cover-historic")[n];
-
-            const defaultCoverArt = "img/cover.png";
-
-            // Corrigido: verifica se 'song' e 'artist' são objetos antes de acessar 'title'
-            const songTitle = typeof info.song === "object" ? info.song.title : info.song;
-            const songArtist = typeof info.artist === "object" ? info.artist.title : info.artist;
-
-            songName.innerHTML = songTitle || "Desconhecido"; // Adiciona uma verificação para evitar erros
-            artistName.innerHTML = songArtist || "Desconhecido"; // Adiciona uma verificação para evitar erros
-
-            try {
-                // Corrigido: passa 'songTitle' e 'songArtist' para getDataFromITunes
+        this.refreshHistoric = async function(info, n) {
+              const historicDiv = document.querySelectorAll('#historicSong article')[n];
+              const songName = document.querySelectorAll('#historicSong article .music-info .song')[n];
+              const artistName = document.querySelectorAll('#historicSong article .music-info .artist')[n];
+              const coverHistoric = document.querySelectorAll('#historicSong article .cover-historic')[n];
+            
+              const defaultCoverArt = 'img/cover.png';
+            
+              // Extrai o título da música e o nome do artista, 
+              // tratando a possibilidade de 'song' e 'artist' serem objetos ou strings.
+              const songTitle = typeof info.song === 'object' ? info.song.title : info.song;
+              const songArtist = typeof info.artist === 'object' ? info.artist.title : info.artist;
+            
+              // Define o conteúdo dos elementos HTML, 
+              // incluindo uma verificação para evitar erros caso os valores estejam ausentes.
+              songName.innerHTML = songTitle || "Desconhecido";
+              artistName.innerHTML = songArtist || "Desconhecido";
+            
+              try {
+                // Utiliza os valores extraídos para buscar a capa do álbum na API do iTunes.
                 const data = await getDataFromITunes(songArtist, songTitle, defaultCoverArt, defaultCoverArt);
-                coverHistoric.style.backgroundImage = "url(" + (data.art || defaultCoverArt) + ")";
-            } catch (error) {
-                console.log("Erro ao buscar dados da API do iTunes:", error);
-                coverHistoric.style.backgroundImage = "url(" + defaultCoverArt + ")";
-            }
-
-            historicDiv.classList.add("animated", "slideInRight");
-            setTimeout(() => historicDiv.classList.remove("animated", "slideInRight"), 2000);
-        };
+                // Define a imagem de fundo do elemento 'coverHistoric' com a capa encontrada.
+                coverHistoric.style.backgroundImage = 'url(' + (data.art || defaultCoverArt) + ')';
+              } catch (error) {
+                // Captura e imprime o erro no console para ajudar na depuração.
+                console.log("Erro ao buscar dados da API do iTunes:");
+                console.error(error); 
+                // Define a imagem de fundo como a capa padrão em caso de erro.
+                coverHistoric.style.backgroundImage = 'url(' + defaultCoverArt + ')';
+              }
+            
+              // Adiciona a classe 'animated' para a animação de slide.
+              historicDiv.classList.add('animated', 'slideInRight');
+              // Remove a classe 'animated' após 2 segundos para preparar para a próxima animação.
+              setTimeout(() => historicDiv.classList.remove('animated', 'slideInRight'), 2000);
+            };
 
         this.refreshCover = async function (song = "", artist) {
             const coverArt = document.getElementById("currentCoverArt");
@@ -207,40 +216,45 @@ async function getStreamingData() {
 
     if (data) {
       const page = new Page();
-      const historyArray = data.song_history || data.history;
 
-      // Extrai título e artista, adaptando-se aos diferentes formatos
-      const extractSongArtist = (data) => ({
-        song: typeof data.song === 'object' ? data.song.title : data.song,
-        artist: typeof data.artist === 'object' ? data.artist.title : data.artist,
-      });
-      const { song: currentSong, artist: currentArtist } = extractSongArtist(data);
+      // Extrai informações da música atual, 
+      // tratando a possibilidade de 'song' e 'artist' serem objetos ou strings.
+      const currentSong = data.songtitle || (typeof data.song === 'object' ? data.song.title : data.song);
+      const currentArtist = typeof data.artist === 'object' ? data.artist.title : data.artist;
 
-      document.title = `${currentSong} - ${currentArtist} | ${RADIO_NAME}`;
+      // Escapa caracteres especiais para evitar problemas no HTML.
+      const safeCurrentSong = (currentSong || "").replace(/'/g, "'").replace(/&/g, "&");
+      const safeCurrentArtist = (currentArtist || "").replace(/'/g, "'").replace(/&/g, "&");
 
-      if (document.getElementById('currentSong').textContent !== currentSong) {
-        page.refreshCover(currentSong, currentArtist);
-        page.refreshCurrentSong(currentSong, currentArtist);
-        page.refreshLyric(currentSong, currentArtist);
+      document.title = `${safeCurrentSong} - ${safeCurrentArtist} | ${RADIO_NAME}`;
+
+      if (document.getElementById('currentSong').innerHTML !== safeCurrentSong) {
+        page.refreshCover(safeCurrentSong, safeCurrentArtist);
+        page.refreshCurrentSong(safeCurrentSong, safeCurrentArtist);
+        page.refreshLyric(safeCurrentSong, safeCurrentArtist);
 
         const historicContainer = document.getElementById('historicSong');
         historicContainer.innerHTML = '';
 
+        // Normaliza o formato do histórico das duas APIs
+        const historyArray = data.song_history ? data.song_history.map((item) => ({
+          song: item.song.title, 
+          artist: item.song.artist 
+        })) : data.history;
+
         for (let i = 1; i < historyArray.length; i++) {
           const songInfo = historyArray[i];
-          const { song, artist } = extractSongArtist(songInfo);
-
           const article = document.createElement('article');
           article.classList.add('col-12', 'col-md-6');
           article.innerHTML = `
             <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
             <div class="music-info">
-              <p class="song">${song || "Desconhecido"}</p>
-              <p class="artist">${artist || "Desconhecido"}</p>
+              <p class="song">${songInfo.song || "Desconhecido"}</p>
+              <p class="artist">${songInfo.artist || "Desconhecido"}</p>
             </div>
           `;
           historicContainer.appendChild(article);
-          page.refreshHistoric({ song, artist }, i - 1); 
+          page.refreshHistoric(songInfo, i - 1);
         }
       }
     }
