@@ -12,6 +12,8 @@ const API_KEY = "18fe07917957c289983464588aabddfb";
 
 let userInteracted = true;
 
+let musicaAtual = null;
+
 // Cache para a API do iTunes
 const cache = {};
 
@@ -21,7 +23,7 @@ window.addEventListener("load", () => {
     page.setVolume();
 
     const player = new Player();
-    player.play();
+    //player.play();
 
     // Chama a função getStreamingData imediatamente quando a página carrega
     getStreamingData();
@@ -47,34 +49,38 @@ class Page {
         };
 
         this.refreshCurrentSong = function (song, artist) {
-            const currentSong = document.getElementById("currentSong");
-            const currentArtist = document.getElementById("currentArtist");
-            const lyricsSong = document.getElementById("lyricsSong");
+        const currentSong = document.getElementById("currentSong");
+        const currentArtist = document.getElementById("currentArtist");
+        const lyricsSong = document.getElementById("lyricsSong");
 
-            if (song !== currentSong.textContent || artist !== currentArtist.textContent) {
-                // Esmaecer o conteúdo existente (fade-out)
-                currentSong.classList.add("fade-out");
-                currentArtist.classList.add("fade-out");
+        // Variável para controlar a inicialização do marquee
+        let marqueeInicializado = false;
 
-                setTimeout(function () {
-                    // Atualizar o conteúdo após o fade-out
-                    currentSong.textContent = song;
-                    currentArtist.textContent = artist;
-                    lyricsSong.textContent = song + " - " + artist;
+        if (song !== currentSong.textContent || artist !== currentArtist.textContent) {
+            // Esmaecer o conteúdo existente (fade-out)
+            currentSong.classList.add("fade-out");
+            currentArtist.classList.add("fade-out");
 
-                    // Esmaecer o novo conteúdo (fade-in)
-                    currentSong.classList.remove("fade-out");
-                    currentSong.classList.add("fade-in");
-                    currentArtist.classList.remove("fade-out");
-                    currentArtist.classList.add("fade-in");
-                }, 500);
+            setTimeout(function () {
+            // Atualizar o conteúdo após o fade-out
+            currentSong.textContent = song;
+            currentArtist.textContent = artist;
+            lyricsSong.textContent = song + " - " + artist;
 
-                setTimeout(function () {
-                    // Remover as classes fade-in após a animação
-                    currentSong.classList.remove("fade-in");
-                    currentArtist.classList.remove("fade-in");
-                }, 1000);
+            // Esmaecer o novo conteúdo (fade-in)
+            currentSong.classList.remove("fade-out");
+            currentSong.classList.add("fade-in");
+            currentArtist.classList.remove("fade-out");
+            currentArtist.classList.add("fade-in");
+
+            // Verificar se o marquee já foi inicializado
+            if (!marqueeInicializado) {
+                iniciarMarquee();
+                marqueeInicializado = true;
             }
+
+            }, 500); // Mantém o tempo de delay para o fade-in
+        }
         };
 
         this.refreshHistoric = async function (info, n) {
@@ -217,26 +223,26 @@ async function getStreamingData() {
         if (data) {
             const page = new Page();
 
-            // Extrai informações da música atual,
-            // tratando a possibilidade de 'song' e 'artist' serem objetos ou strings.
+            // Extrai informações da música atual
             const currentSong = data.songtitle || (typeof data.song === "object" ? data.song.title : data.song);
             const currentArtist = typeof data.artist === "object" ? data.artist.title : data.artist;
 
-            // Escapa caracteres especiais para evitar problemas no HTML.
+            // Escapa caracteres especiais 
             const safeCurrentSong = (currentSong || "").replace(/'/g, "'").replace(/&/g, "&");
             const safeCurrentArtist = (currentArtist || "").replace(/'/g, "'").replace(/&/g, "&");
 
-            document.title = `${safeCurrentSong} - ${safeCurrentArtist} | ${RADIO_NAME}`;
+            // Comparar a música atual com a anterior
+            if (safeCurrentSong !== musicaAtual) { 
+                document.title = `${safeCurrentSong} - ${safeCurrentArtist} | ${RADIO_NAME}`;
 
-            if (document.getElementById("currentSong").innerHTML !== safeCurrentSong) {
                 page.refreshCover(safeCurrentSong, safeCurrentArtist);
                 page.refreshCurrentSong(safeCurrentSong, safeCurrentArtist);
                 page.refreshLyric(safeCurrentSong, safeCurrentArtist);
 
                 const historicContainer = document.getElementById("historicSong");
-                historicContainer.innerHTML = "";
+                historicContainer.innerHTML = ""; 
 
-                // Normaliza o formato do histórico das duas APIs
+                // Normaliza o formato do histórico
                 const historyArray = data.song_history
                     ? data.song_history.map((item) => ({
                           song: item.song.title,
@@ -244,21 +250,24 @@ async function getStreamingData() {
                       }))
                     : data.history;
 
+                // Preenche o histórico
                 for (let i = 0; i < historyArray.length; i++) {
                     const songInfo = historyArray[i];
                     const article = document.createElement("article");
                     article.classList.add("col-12", "col-md-6");
                     article.innerHTML = `
-            <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
-            <div class="music-info">
-              <p class="song">${songInfo.song || "Desconhecido"}</p>
-              <p class="artist">${songInfo.artist || "Desconhecido"}</p>
-            </div>
-          `;
+                        <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
+                        <div class="music-info">
+                          <p class="song">${songInfo.song || "Desconhecido"}</p>
+                          <p class="artist">${songInfo.artist || "Desconhecido"}</p>
+                        </div>
+                      `;
                     historicContainer.appendChild(article);
-                    //page.refreshHistoric(songInfo, i - 1);
-                    page.refreshHistoric(songInfo, i);
+                    page.refreshHistoric(songInfo, i); 
                 }
+
+                // Atualizar a música atual após todas as funções serem chamadas
+                musicaAtual = safeCurrentSong;
             }
         }
     } catch (error) {
@@ -337,6 +346,17 @@ const getDataFromITunes = async (artist, title, defaultArt, defaultCover) => {
     cache[cacheKey] = results;
     return results;
 };
+
+function iniciarMarquee() {
+    $('.current-song ').marquee({
+        // Opções de configuração (ajuste conforme necessário):
+        duration: 10000, // Tempo em milissegundos para completar a animação
+        gap: 50, // Espaçamento entre as repetições do texto
+        delayBeforeStart: 0, // Atraso antes do início da animação
+        direction: 'left', // Direção do movimento ('left' ou 'right')
+        duplicated: true // Se o texto deve ser duplicado para criar um loop suave
+    });
+  }
 
 // AUDIO
 
