@@ -256,7 +256,8 @@ async function getStreamingData() {
             </div>
           `;
                     historicContainer.appendChild(article);
-                    page.refreshHistoric(songInfo, i - 1);
+                    //page.refreshHistoric(songInfo, i - 1);
+                    page.refreshHistoric(songInfo, i);
                 }
             }
         }
