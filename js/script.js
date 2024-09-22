@@ -199,60 +199,54 @@ class Page {
 }
 
 async function getStreamingData() {
-    try {
-        // Tenta buscar dados da API principal
-        let data = await fetchStreamingData(API_URL);
+  try {
+    let data = await fetchStreamingData(API_URL);
+    if (!data) {
+      data = await fetchStreamingData(FALLBACK_API_URL);
+    }
 
-        // Se a API principal falhar, tenta buscar dados da API de fallback
-        if (!data) {
-            data = await fetchStreamingData(FALLBACK_API_URL);
-        }
+    if (data) {
+      const page = new Page();
+      const historyArray = data.song_history || data.history;
 
-        if (data) {
-            const page = new Page();
+      // Extrai título e artista, adaptando-se aos diferentes formatos
+      const extractSongArtist = (data) => ({
+        song: typeof data.song === 'object' ? data.song.title : data.song,
+        artist: typeof data.artist === 'object' ? data.artist.title : data.artist,
+      });
+      const { song: currentSong, artist: currentArtist } = extractSongArtist(data);
 
-            // Obtém o array de histórico, seja ele 'history' ou 'song_history'
-            const historyArray = data.history || data.song_history;
+      document.title = `${currentSong} - ${currentArtist} | ${RADIO_NAME}`;
 
-            // Verifica se o formato do dado atual é um objeto ou uma string
-            const currentSong = typeof data.song === "object" ? data.song.title : data.song;
-            const currentArtist = typeof data.artist === "object" ? data.artist.title : data.artist;
+      if (document.getElementById('currentSong').textContent !== currentSong) {
+        page.refreshCover(currentSong, currentArtist);
+        page.refreshCurrentSong(currentSong, currentArtist);
+        page.refreshLyric(currentSong, currentArtist);
 
-            // Ajusta caracteres especiais no título e artista
-            const safeCurrentSong = (currentSong || "").replace(/'/g, "'").replace(/&/g, "&");
-            const safeCurrentArtist = (currentArtist || "").replace(/'/g, "'").replace(/&/g, "&");
+        const historicContainer = document.getElementById('historicSong');
+        historicContainer.innerHTML = '';
 
-            document.title = safeCurrentSong + " - " + safeCurrentArtist + " | " + RADIO_NAME;
+        for (let i = 1; i < historyArray.length; i++) {
+          const songInfo = historyArray[i];
+          const { song, artist } = extractSongArtist(songInfo);
 
-            if (document.getElementById("currentSong").innerHTML !== safeCurrentSong) {
-                page.refreshCover(safeCurrentSong, safeCurrentArtist);
-                page.refreshCurrentSong(safeCurrentSong, safeCurrentArtist);
-                page.refreshLyric(safeCurrentSong, safeCurrentArtist);
-
-                // Atualiza o histórico de músicas (ignorando a primeira música)
-                const historicContainer = document.getElementById("historicSong");
-                historicContainer.innerHTML = "";
-
-                // Adiciona as músicas do histórico (a partir da segunda música)
-                for (let i = 1; i < historyArray.length; i++) {
-                    const songInfo = historyArray[i];
-                    const article = document.createElement("article");
-                    article.classList.add("col-12", "col-md-6");
-                    article.innerHTML = `
+          const article = document.createElement('article');
+          article.classList.add('col-12', 'col-md-6');
+          article.innerHTML = `
             <div class="cover-historic" style="background-image: url('img/cover.png');"></div>
             <div class="music-info">
-              <p class="song">${songInfo.song || songInfo.song.title || "Desconhecido"}</p>
-              <p class="artist">${songInfo.artist || songInfo.song.artist || "Desconhecido"}</p>
+              <p class="song">${song || "Desconhecido"}</p>
+              <p class="artist">${artist || "Desconhecido"}</p>
             </div>
           `;
-                    historicContainer.appendChild(article);
-                    page.refreshHistoric(songInfo, i - 1);
-                }
-            }
+          historicContainer.appendChild(article);
+          page.refreshHistoric({ song, artist }, i - 1); 
         }
-    } catch (error) {
-        console.log("Erro ao buscar dados de streaming:", error);
+      }
     }
+  } catch (error) {
+    console.log("Erro ao buscar dados de streaming:", error);
+  }
 }
 
 // Função para buscar dados de streaming de uma API específica
