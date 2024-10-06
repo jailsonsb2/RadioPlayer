@@ -89,7 +89,7 @@ class Page {
             const artistName = document.querySelectorAll("#historicSong article .music-info .artist")[n];
             const coverHistoric = document.querySelectorAll("#historicSong article .cover-historic")[n];
 
-            const defaultCoverArt = "img/cover.png";
+            const defaultCoverArt = "img/0blspAX.png";
 
             // Extrai o título da música e o nome do artista,
             // tratando a possibilidade de 'song' e 'artist' serem objetos ou strings.
@@ -123,7 +123,7 @@ class Page {
         this.refreshCover = async function (song = "", artist) {
             const coverArt = document.getElementById("currentCoverArt");
             const coverBackground = document.getElementById("bgCover");
-            const defaultCoverArt = "img/cover.png";
+            const defaultCoverArt = "img/0blspAX.png";
 
             try {
                 const data = await getDataFromITunes(artist, song, defaultCoverArt, defaultCoverArt);
