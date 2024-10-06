@@ -1,7 +1,7 @@
-const RADIO_NAME = "Jailson Web Rádio";
+const RADIO_NAME = "VNRC Radio";
 
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
-const URL_STREAMING = "https://stream.zeno.fm/yn65fsaurfhvv";
+const URL_STREAMING = "https://stream.zeno.fm/qnbaox4th7ruv";
 
 //API URL /
 const API_URL = "https://twj.es/radio_info/?radio_url=" + URL_STREAMING;
