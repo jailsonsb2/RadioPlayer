@@ -217,17 +217,13 @@ async function getStreamingData() {
 
         if (data) {
             const page = new Page();
-
-            // Extrai informações da música atual
             const currentSong = data.songtitle || (typeof data.song === "object" ? data.song.title : data.song);
             const currentArtist = typeof data.artist === "object" ? data.artist.title : data.artist;
 
-            // Escapa caracteres especiais 
             const safeCurrentSong = (currentSong || "").replace(/'/g, "'").replace(/&/g, "&");
             const safeCurrentArtist = (currentArtist || "").replace(/'/g, "'").replace(/&/g, "&");
 
-            // Comparar a música atual com a anterior
-            if (safeCurrentSong !== musicaAtual) { 
+            if (safeCurrentSong !== musicaAtual) {
                 document.title = `${safeCurrentSong} - ${safeCurrentArtist} | ${RADIO_NAME}`;
 
                 page.refreshCover(safeCurrentSong, safeCurrentArtist);
@@ -235,19 +231,17 @@ async function getStreamingData() {
                 page.refreshLyric(safeCurrentSong, safeCurrentArtist);
 
                 const historicContainer = document.getElementById("historicSong");
-                historicContainer.innerHTML = ""; 
+                historicContainer.innerHTML = "";
 
-                // Normaliza o formato do histórico
                 const historyArray = data.song_history
-                    ? data.song_history.map((item) => ({
-                          song: item.song.title,
-                          artist: item.song.artist,
-                      }))
+                    ? data.song_history.map((item) => ({ song: item.song.title, artist: item.song.artist }))
                     : data.history;
 
-                // Preenche o histórico
-                for (let i = 0; i < historyArray.length; i++) {
-                    const songInfo = historyArray[i];
+                const maxSongsToDisplay = 4; // Adjust as needed
+                const limitedHistory = historyArray.slice(Math.max(0, historyArray.length - maxSongsToDisplay));
+
+                for (let i = 0; i < limitedHistory.length; i++) {
+                    const songInfo = limitedHistory[i];
                     const article = document.createElement("article");
                     article.classList.add("col-12", "col-md-6");
                     article.innerHTML = `
@@ -258,10 +252,12 @@ async function getStreamingData() {
                         </div>
                       `;
                     historicContainer.appendChild(article);
-                    page.refreshHistoric(songInfo, i); 
+                    try {
+                        page.refreshHistoric(songInfo, i);
+                    } catch (error) {
+                        console.error("Error refreshing historic song:", error);
+                    }
                 }
-
-                // Atualizar a música atual após todas as funções serem chamadas
                 musicaAtual = safeCurrentSong;
             }
         }
