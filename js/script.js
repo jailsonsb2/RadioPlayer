@@ -4,7 +4,7 @@ const RADIO_NAME = 'Jailson Web Rádio';
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://twj.es/radio_info/?radio_url='+URL_STREAMING;
+const API_URL = 'https://api.twj.es/radio_info/?radio_url='+URL_STREAMING;
 const FALLBACK_API_URL = 'https://api-v2.streamafrica.net/icyv2?url=' + URL_STREAMING;
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
