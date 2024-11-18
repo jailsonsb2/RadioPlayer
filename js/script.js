@@ -1,7 +1,7 @@
 const RADIO_NAME = 'Jailson Web Rádio';
 
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
-const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
+const URL_STREAMING = 'https://sv1.audiostream.com.br:8000/prime';
 
 //API URL /
 const API_URL = 'https://api.twj.es/radio_info/?radio_url='+URL_STREAMING;
