@@ -5,7 +5,7 @@ const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
 const API_URL = 'https://free.miradio.pro/icy?url='+URL_STREAMING;
-const FALLBACK_API_URL = 'https://free.radioapi.lat/nx?url=' + URL_STREAMING;
+const FALLBACK_API_URL = 'https://free.radioapi.lat/met?url=' + URL_STREAMING;
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
