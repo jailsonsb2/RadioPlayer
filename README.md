@@ -110,3 +110,12 @@ If you have any feedback, please reach out to me at contact@jailson.es
 * [joeyboli/RadioPlayer](https://github.com/joeyboli/RadioPlayer)
 
 
+---
+
+## ⚖️ License
+
+This project is licensed under the **GNU AGPL-3.0** (see [LICENSE](LICENSE)): you are free to use, modify and redistribute it — including commercially — provided derivative works remain open source and keep the original copyright notices, **even when offered only as a hosted/network service**.
+
+**Closed-source / commercial licensing:** to embed this code in a proprietary product without AGPL obligations, a separate commercial license is available — contact [contato@jailson.es](mailto:contato@jailson.es).
+
+Copyright (C) 2024-2026 Jailson Bezerra ([@jailsonsb2](https://github.com/jailsonsb2))
