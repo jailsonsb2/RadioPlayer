@@ -7,9 +7,6 @@ const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 const API_URL = 'https://twj.es/free/?url='+URL_STREAMING;
 const FALLBACK_API_URL = 'https://twj.es/metadata/?url=' + URL_STREAMING;
 
-// Visit https://api.vagalume.com.br/docs/ to get your API key
-const API_KEY = "18fe07917957c289983464588aabddfb";
-
 let userInteracted = true;
 
 let musicaAtual = null;
@@ -175,31 +172,49 @@ class Page {
         this.refreshLyric = async function (currentSong, currentArtist) {
             const openLyric = document.getElementsByClassName('lyrics')[0];
             const modalLyric = document.getElementById('modalLyrics');
-            
+
+            // A API do Vagalume foi descontinuada — busca em lyrics.ovh e,
+            // se não encontrar, no LRCLIB (nenhuma exige chave de API).
+            let lyric = null;
             try {
-              const response = await fetch('https://api.vagalume.com.br/search.php?apikey=' + API_KEY + '&art=' + currentArtist + '&mus=' + currentSong.toLowerCase());
+              const response = await fetch('https://api.lyrics.ovh/v1/' + encodeURIComponent(currentArtist) + '/' + encodeURIComponent(currentSong));
               const data = await response.json();
-          
-              if (data.type === 'exact' || data.type === 'aprox') {
-                const lyric = data.mus[0].text;
-          
-                //document.getElementById('lyric').textContent = lyric.replace(/\n/g, '<br />'); Use textContent em vez de innerHTML
-                document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
-                openLyric.style.opacity = "1";
-                openLyric.setAttribute('data-toggle', 'modal');
-          
-                // Esconde o modal caso esteja visível
-                modalLyric.style.display = "none";
-                modalLyric.setAttribute('aria-hidden', 'true');
-                if (document.getElementsByClassName('modal-backdrop')[0]) {
-                  document.getElementsByClassName('modal-backdrop')[0].remove();
+              if (data && data.lyrics) lyric = data.lyrics;
+            } catch (error) {}
+
+            if (!lyric) {
+              try {
+                const response = await fetch('https://lrclib.net/api/get?artist_name=' + encodeURIComponent(currentArtist) + '&track_name=' + encodeURIComponent(currentSong));
+                if (response.ok) {
+                  const data = await response.json();
+                  lyric = data.plainLyrics || data.syncedLyrics || null;
                 }
-              } else {
-                openLyric.style.opacity = "0.3";
-                openLyric.removeAttribute('data-toggle');
+              } catch (error) {}
+            }
+
+            if (!lyric) {
+              try {
+                const response = await fetch('https://lrclib.net/api/search?track_name=' + encodeURIComponent(currentSong) + '&artist_name=' + encodeURIComponent(currentArtist));
+                if (response.ok) {
+                  const results = await response.json();
+                  const hit = Array.isArray(results) && results.find((r) => r.plainLyrics || r.syncedLyrics);
+                  if (hit) lyric = hit.plainLyrics || hit.syncedLyrics;
+                }
+              } catch (error) {}
+            }
+
+            if (lyric) {
+              document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
+              openLyric.style.opacity = "1";
+              openLyric.setAttribute('data-toggle', 'modal');
+
+              // Esconde o modal caso esteja visível
+              modalLyric.style.display = "none";
+              modalLyric.setAttribute('aria-hidden', 'true');
+              if (document.getElementsByClassName('modal-backdrop')[0]) {
+                document.getElementsByClassName('modal-backdrop')[0].remove();
               }
-            } catch (error) {
-              console.log("Erro ao buscar a letra da música:", error);
+            } else {
               openLyric.style.opacity = "0.3";
               openLyric.removeAttribute('data-toggle');
             }

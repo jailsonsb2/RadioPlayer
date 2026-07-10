@@ -7,7 +7,7 @@
 * Current song
 * Historic of played songs
 * Cover art of the current song
-* Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
+* Lyrics of the current song via [lyrics.ovh](https://lyrics.ovh) with [LRCLIB](https://lrclib.net) fallback — no API key required
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
 * Added automatic search in alternative api in case of error
