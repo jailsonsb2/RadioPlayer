@@ -1,5 +1,5 @@
-// Define o nome do cache
-const CACHE_NAME = 'web-radio-v1';
+// Define o nome do cache (bump da versão invalida o layout antigo em cache)
+const CACHE_NAME = 'web-radio-v2';
 
 // Lista de arquivos a serem cacheados
 const urlsToCache = [
@@ -19,6 +19,19 @@ self.addEventListener('install', function(event) {
         console.log('Cache aberto');
         return cache.addAll(urlsToCache);
       })
+  );
+  self.skipWaiting();
+});
+
+// Remove caches de versões anteriores
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(
+        keys.filter(function(key) { return key !== CACHE_NAME; })
+            .map(function(key) { return caches.delete(key); })
+      );
+    })
   );
 });
 

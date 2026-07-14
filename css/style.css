@@ -1,480 +1,588 @@
 @charset 'utf-8';
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,300;1,800&display=swap');
-@import url('bootstrap.min.css');
+/* =========================================================
+   Radio Player — conceito "now playing app"
+   Uma única linguagem visual: capa da música desfocada como
+   fundo, superfícies translúcidas consistentes, um acento
+   ciano e tipografia Poppins. Sem Bootstrap.
+   ========================================================= */
 
-html, body {
-    height: 100%;
+:root {
+    --accent: #00e1e7;
+    --accent-strong: #00b8bd;
+    --accent-ink: #062a2c;
+    --bg: #0b0e13;
+    --text: #f4f6f8;
+    --text-muted: rgba(244, 246, 248, 0.62);
+    --surface: rgba(255, 255, 255, 0.06);
+    --surface-strong: rgba(255, 255, 255, 0.12);
+    --border: rgba(255, 255, 255, 0.12);
+    --radius: 20px;
 }
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
 
 body {
-    display: flex;
-    flex-flow: row;
-    justify-content: center;
-    overflow-x: hidden;
-}
-
-
-.cover-site {
-    min-width: 100%;
+    margin: 0;
     min-height: 100%;
-    position: fixed;
-    background: url('../img/bg_site.jpg') no-repeat;
-    background-position: center;
-    background-size: cover;
-    transition: background-image 1s;
-    background-attachment: fixed;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* FONDO DESENFOQUE */
+[hidden] { display: none !important; }
+.hidden { display: none; }
+.text-uppercase { text-transform: uppercase; }
+.text-capitalize { text-transform: capitalize; }
+
+/* ---- fundo: capa da música desfocada + gradiente ---- */
+
+.bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
 
 #bgCover {
-    height: 100%;
-    width: 100%;
     position: absolute;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center 20%;
-    filter: blur(20px);
-    -webkit-filter: blur(20px);
-    transition: all .5s linear;
-    transform: scale(2.2);
-  
-    z-index: 1;
+    inset: 0;
+    background: url('../img/cover.png') center / cover no-repeat;
+    filter: blur(64px) saturate(140%);
+    transform: scale(1.4);
 }
 
-.bg-mask {
-    min-width: 100%;
-    min-height: 100%;
+.bg-overlay {
     position: absolute;
-     background-color: rgba(0,0,0,0.5);
-    z-index: 2;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8, 10, 15, 0.5) 0%, rgba(8, 10, 15, 0.75) 55%, var(--bg) 100%);
 }
 
-.web-player {
-    height: 100%;
-    color: #fff;
-    padding: 5px;
+/* ---- estrutura ---- */
+
+.app {
     position: relative;
-    z-index: 3;
-    margin-top: 25px;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top)) 20px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.masthead {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* ---- player ---- */
+
+.player {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
 }
 
 .cover-album {
-    max-width: 80%;
-    margin: auto;
-    background: url('../img/cover.png') no-repeat;
-    background-size: cover;
-    border: 2px solid #fefefe;
-    box-shadow: 0px 5px 10px 3px rgba(0, 0, 0, 0.4);
-    transition: background-image 1s;
-    border-radius: 10px;
-
-    margin-bottom: 15px;
+    width: min(68vw, 300px);
+    aspect-ratio: 1 / 1;
+    flex: none;
+    border-radius: 24px;
+    background: url('../img/cover.png') center / cover no-repeat;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
 }
-
-
 
 #currentCoverArt {
     width: 100%;
     height: 100%;
+    border-radius: inherit;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-     border-radius: 10px;
-  
-    transition: background-image 1s;
 }
 
-.logo {
-    display: none;
-}
-
-.info-current-song {
-    font-family: 'Poppins', sans-serif;
+.player-info {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
 }
 
-.info-current-song h2 {
-    font-size: 46px;
-    text-transform: uppercase;
-    font-weight: 800;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-   
-}
-
-.info-current-song h3 {
-    font-size: 22px;
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 11px;
     font-weight: 600;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.24em;
 }
 
-.current-song {
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    text-overflow: ellipsis;
-
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff5a5f;
+    box-shadow: 0 0 10px #ff5a5f;
+    animation: live-pulse 1.6s ease-in-out infinite;
 }
 
-.current-artist {
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    text-overflow: ellipsis;
-
+@keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
 }
 
-.play-pause {
-    font-size: 65px; 
-    color: white; 
+#currentSong {
+    margin: 16px 0 4px;
+    font-size: clamp(24px, 6vw, 34px);
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
 }
 
-.play-pause i {
+#currentArtist {
+    margin: 0;
+    font-size: clamp(14px, 3vw, 18px);
+    font-weight: 500;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+/* ---- controles ---- */
+
+.controls {
+    margin-top: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.control-cluster {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* botões utilitários circulares, mesma família visual do play */
+.ctrl-btn {
+    width: 52px;
+    height: 52px;
+    flex: none;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 17px;
     cursor: pointer;
-    color: white; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.15s ease, opacity 0.3s ease;
 }
 
-.volume-icon {
-    font-size: 28px;
-    margin-top: -5px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-    border: none; /* Adicionado para remover a borda */
+.ctrl-btn:hover { background: var(--surface-strong); }
+.ctrl-btn:active { transform: scale(0.94); }
+.ctrl-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.play-btn {
+    width: 76px;
+    height: 76px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: var(--text);
+    background: var(--surface-strong);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, background 0.2s ease;
 }
 
-.volume-slide {
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-    
+.play-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.18);
 }
 
+.play-btn:active { transform: scale(0.96); }
+.play-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.play-btn .fa-play { margin-left: 5px; }
 
-.volume-control {
+/* estado do player (#buttonPlay): o script.js atualiza o texto
+   (PLAY/PAUSAR/...), mas ele fica só para leitores de tela — o ícone
+   do botão já comunica o estado visualmente */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- volume: botão circular + popover (escondido no celular: botões físicos) ---- */
+
+.volume-wrap {
     display: none;
-    padding: 10px;
-    border-radius: 5px;
+    position: relative;
 }
 
-.volume-slide input[type="range"] {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    outline: none;
-    border-radius: 5px;
-    border: none; /* Adicionado para remover a borda */
+@media (min-width: 576px) {
+    .volume-wrap { display: flex; }
 }
 
-.percentual-volume {
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-    border: none; /* Adicionado para remover a borda */
+.volume-popover {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 220px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(11, 14, 19, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
-.vagalume a {
-    color: #fff;
-    text-decoration: underline;
+.vol-value {
+    flex: none;
+    min-width: 42px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
 }
 
-.lyrics {
-    text-transform: uppercase;
-    text-decoration: underline;
-    color: #fff;
-    font-size: 1em;
-    font-weight: 400;
-    outline: none;
-    transition: .3s;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-}
-
-.lyrics:active {
-    text-decoration: none;
-    color: #fff;
-}
-
-.lyrics:visited {
-    text-decoration: none;
-    color: #fff;
-}
-
-.modal-content {
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff !important;
-    border-radius: 20px;
-}
-
-.modal-content .btn {
-    border-radius: 20px;
-    background-color: #00E1E7;
-}
-
-/* Chrome */
 input[type=range] {
     -webkit-appearance: none;
-    background: transparent;
-    width: 100%;
-}
-
-input[type=range]:focus {
-    outline: none;
-}
-
-input[type=range]::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 5px;
+    appearance: none;
+    flex: 1;
+    min-width: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--surface-strong);
     cursor: pointer;
-    animation: 0.2s;
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fff;
 }
+
+input[type=range]:focus { outline: none; }
+input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
 input[type=range]::-webkit-slider-thumb {
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
     -webkit-appearance: none;
-    margin-top: -8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0, 225, 231, 0.2);
 }
 
-/* Firefox */
 input[type=range]::-moz-range-track {
-    width: 100%;
-    height: 5px;
-    cursor: pointer;
-    animation: 0.2s;
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fff;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--surface-strong);
 }
 
 input[type=range]::-moz-range-thumb {
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    border: 0px solid #000000;
-    height: 20px;
-    width: 20px;
+    width: 14px;
+    height: 14px;
+    border: none;
     border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0, 225, 231, 0.2);
 }
 
-/* IE e Edge */
-input[type=range]::-ms-track {
-    width: 100%;
-    height: 5px;
-    cursor: pointer;
-    animation: 0.2s;
-    background: transparent;
-    border-color: transparent;
-    border-width: 10px 0;
-    top: -10px;
-    color: transparent;
+/* o botão da letra herda .ctrl-btn; o script.js controla opacity/data-toggle */
+
+/* ---- próxima música da fila (AzuraCast, index_azura.html) ---- */
+
+.up-next {
+    margin-top: 24px;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px 10px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
 }
 
-input[type=range]::-ms-fill-lower {
-    background: #fff;
-    border: 0px solid #000101;
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
+.up-next.hidden { display: none; }
+
+.up-next-label {
+    flex: none;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-muted);
 }
 
-input[type=range]::-ms-fill-upper {
-    background: #fff;
-    border: 0px solid #000101;
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-}
-
-input[type=range]::-ms-thumb {
-    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    border: 0px solid #000000;
-    height: 20px;
-    width: 20px;
+.up-next-cover {
+    width: 40px;
+    height: 40px;
+    flex: none;
     border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
+    background: url('../img/cover.png') center / cover no-repeat;
 }
 
+.up-next-info { min-width: 0; }
 
-.historic h2 {
-    color: #fefefe;
-    border-bottom: 2px solid #fefefe;
-    font-size: 18px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin: 10px 0;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);   
-    
+.up-next-song {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-
-/* ZONA FONDO CANCIONES SONADAS */
-
-.historic article {
-    margin: 5px 0;
-    padding: 10px;
-    background-color: none;
+.up-next-artist {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.historic .cover-historic { 
-    width: 95px;
-    height: 95px;
-    margin-right: 15px;
-    float: left;
-    border-radius: 10px;
-    background: url('../img/cover.png') no-repeat;
-    background-size: cover;
-    border: 2px solid #fefefe;
-   
-    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.3);
-    transition: background-image 1s;
-}
+/* ---- histórico ---- */
 
-/* COLOR TEXTO INFO ARTISTA */
-.historic .music-info {
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-}
-
-
-/* COLOR TEXTO CANCION */
-
-.historic .music-info .song {
+.historic {
     width: 100%;
-    font-weight: bold;
-    font-size: 20px;
+    max-width: 880px;
+    margin-top: 56px;
+}
+
+.section-title {
+    margin: 0 0 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
-    margin-bottom: -5px;
-    color: white;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    color: var(--text-muted);
 }
 
-@media(max-width: 370px) {
-    .cover-album {
-        max-width: 100%;
+/* minmax(0, 1fr) trava a coluna na largura do container — sem isso a track
+   "auto" cresce até o max-content de títulos longos (nowrap) e estoura a
+   tela no celular em vez de deixar o ellipsis agir */
+.history-list {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .history-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+#historicSong article {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.cover-historic {
+    width: 60px;
+    height: 60px;
+    flex: none;
+    border-radius: 14px;
+    background: url('../img/cover.png') center / cover no-repeat;
+}
+
+.music-info { min-width: 0; }
+
+.music-info .song {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-info .artist {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- modal de letra ---- */
+
+#modalLyrics {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(5, 8, 12, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-card {
+    width: min(560px, 100%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #12161d;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6);
+}
+
+.modal-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+}
+
+#lyricsSong {
+    margin: 0;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal-close {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--surface-strong);
+    color: var(--text);
+}
+
+#lyric {
+    padding: 20px 22px;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text-muted);
+}
+
+body.modal-open { overflow: hidden; }
+
+/* ---- botão instalar PWA ---- */
+
+.install-btn {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top));
+    right: 16px;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(11, 14, 19, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.install-btn:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* celular: no topo o botão brigava com o nome da rádio (masthead centrado);
+   vira uma pílula fixa na base da tela, na zona do polegar */
+@media (max-width: 575px) {
+    .install-btn {
+        top: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(16px + env(safe-area-inset-bottom));
+        padding: 11px 22px;
+        background: rgba(11, 14, 19, 0.85);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* reserva espaço no fim do conteúdo enquanto o botão existe,
+       para a pílula fixa não cobrir o último card do histórico */
+    body:has(.install-btn:not([hidden])) .app {
+        padding-bottom: calc(96px + env(safe-area-inset-bottom));
     }
 }
 
-@media(min-width: 576px) {
-    .volume-control {
-        display: flex;
-    }
+/* ---- desktop: capa à esquerda, informações à direita ---- */
 
-    .call-lyrics {
-        margin-top: 20px;
-    }
-}
-
-@media(min-width: 768px) {
-    body {
+@media (min-width: 900px) {
+    .player {
+        max-width: 880px;
+        margin-top: 56px;
+        flex-direction: row;
+        justify-content: center;
         align-items: center;
+        gap: 64px;
     }
 
-    .h1-logo {
-        text-align: center;
-    }
+    .cover-album { width: 340px; }
 
-    .logo {
-        display: block;
-        z-index: 2;
-    }
-
-    .logo img {
-        max-width: 200px;
-    }
-
-    .web-player {
-        height: auto;
-        margin-top: 0;
-    }
-
-    .cover-album {
-        margin: 10px auto;
-        min-width: 320px;
-        height: 320px;
-    }
-
-    .logo img {
-        max-width: 300px;
-        margin: 65px 0;
-    }
-
-    .info-current-song {
-        margin-top: 20px;
+    .player-info {
+        max-width: 440px;
+        align-items: flex-start;
         text-align: left;
     }
 
-    .volume-control {
-        margin-top: 10%;
+    .controls {
+        flex-direction: row;
+        gap: 18px;
     }
-}
-
-#buttonPlay {
-    padding-left: 10px;
-}
-#playerButton {
-    color: white;
-}
-
-.btn-play {
-    background-color: white;
-    border: none;
-    color: black;
-    padding: 10px 20px; /* Reduzindo o preenchimento */
-    font-size: 14px; /* Reduzindo o tamanho da fonte */
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 20px;
-    width: auto; /* Largura automática */
-    transition: transform .2s;
-    box-shadow: 1px 3px #30303022;
-}
-
-.btn-play:focus {outline:0;}
-
-.btn-play:hover {
-    box-shadow: 1px 5px #30303022;
-    transform: scale(1.1);
-}
-
-.btn-play-circle {
-    background-color: white;
-    border: none;
-    color: black;
-    padding: 10px 20px; 
-    font-size: 20px; 
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 50%;  /* Torna o botão circular */
-    width: 60px;          /* Define uma largura fixa */
-    height: 60px;         /* Define uma altura fixa (igual à largura) */
-    align-items: center;
-    justify-content: center;
-    transition: transform .2s;
-    box-shadow: 1px 3px #30303022;
-}
-
-.btn-play-circle:focus {outline:0;}
-
-.btn-play-circle:hover {
-    box-shadow: 1px 5px #30303022;
-    transform: scale(1.1);
-}
-
-/* Ícone de play */
-.fa-play-circle { 
-    color: white; 
-  }
-  
-  /* Ícone de pause */
-  .fa-pause-circle { 
-    color: white;
-  }
-
-.close{
-    color: white;
-
-}
-
-.fade-out {
-    opacity: 0;
-    transition: opacity 0.5s ease-out; /* Ajuste o tempo conforme necessário */
-  }
-  
-  .fade-in {
-    opacity: 1;
-    transition: opacity 0.5s ease-in; /* Ajuste o tempo conforme necessário */
 }

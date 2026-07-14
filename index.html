@@ -1,138 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Radio Player</title>
+    <meta name="theme-color" content="#0b0e13">
     <link rel="icon" type="image/png" href="img/cover.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="css/animate.css">
-    <link rel="stylesheet" href="css/style.css">   
-    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
-    <div class="cover-site">
+
+    <div class="bg" aria-hidden="true">
         <div id="bgCover"></div>
-        <div class="bg-mask"></div>
+        <div class="bg-overlay"></div>
     </div>
-    <main>
-        <section id="player">
-            <div class="container">
-                <div class="row web-player">
-                    <div class="col-12 col-lg-10">
-                        <div class="row">
-                            <div class="col-12 col-md-5">
-                                <div class="cover-album">
-                                    <div id="currentCoverArt"></div>
-                                    <div class="watermark"></div>
-                                </div>
-                            </div>
-                            <div class="col-12 ml-md-auto col-md-6">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="info-current-song">
-                                            <h2 id="currentSong" class="current-song text-uppercase">Song</h2>
-                                            <h3 id="currentArtist" class="current-artist text-captalize">Artist</h3>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                    
-                                       <div class="row">
-                                            <div class="play-pause col-12 col-md-2 text-center">
-                                                <i id="playerButton" class="fa fa-play-circle" onclick="togglePlay()"></i>
-                                            </div>
-                                            <div class="col-12 col-md-10 text-center">
-                                                <div class="row volume-control">
-                                                    <div class="volume-icon col-1"><i class="fa fa-volume-up"></i></div>
-                                                    <div class="volume-slide col-10 text-center"><input type="range" id="volume"
-                                                            step="1" min="0" max="100" value="80"></div>
-                                                    <div class="percentual-volume col-12">Volume <span id="volIndicator">...</span>%</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 col-md-6 text-center call-lyrics">
-                                                <a href="#" class="lyrics" data-target="#modalLyrics">LETRA</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+
+    <button type="button" id="installPwaBtn" class="install-btn" hidden>
+        <i class="fa fa-download"></i> Instalar app
+    </button>
+
+    <main class="app">
+        <header class="masthead">
+            <span id="radioName">Radio Player</span>
+        </header>
+
+        <section class="player">
+            <div class="artwork cover-album">
+                <div id="currentCoverArt"></div>
+            </div>
+
+            <div class="player-info">
+                <span class="live-badge"><span class="live-dot"></span> AO VIVO</span>
+                <h1 id="currentSong" class="text-uppercase">Música</h1>
+                <h2 id="currentArtist" class="text-capitalize">Artista</h2>
+
+                <div class="controls">
+                    <div class="control-cluster">
+                        <div class="volume-wrap volume-control">
+                            <button type="button" class="ctrl-btn volume-toggle" aria-label="Volume" title="Volume">
+                                <i class="fa fa-volume-up"></i>
+                            </button>
+                            <div class="volume-popover" hidden>
+                                <input type="range" id="volume" step="1" min="0" max="100" value="80" aria-label="Volume">
+                                <span class="vol-value"><span id="volIndicator">80</span>%</span>
                             </div>
                         </div>
+
+                        <button type="button" class="play-btn" onclick="togglePlay()" aria-label="Tocar ou pausar">
+                            <i id="playerButton" class="fa fa-play"></i>
+                        </button>
+
+                        <button type="button" class="ctrl-btn lyrics" title="Letra da música" aria-label="Letra da música">
+                            <i class="fa fa-music"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="row historic">
-                    <div class="col-12">
-                        <h2>History</h2>
-                        <div class="row" id="historicSong">
-                            <article class="col-12 col-md-6">
-                                <div class="cover-historic"></div>
-                                <div class="music-info">
-                                    <div class="song">No Song</div>
-                                    <div class="artist">No Artist</div>
-                                </div>                                
-                            </article>
-                            <article class="col-12 col-md-6">
-                                <div class="cover-historic"></div>
-                                <div class="music-info">
-                                    <div class="song">No Title</div>
-                                    <div class="artist">No Artist</div>
-                                </div>   
-                            </article>
-                            <article class="col-12 col-md-6">
-                                <div class="cover-historic"></div>
-                                <div class="music-info">
-                                    <div class="song">No Song</div>
-                                    <div class="artist">No Artist</div>
-                                </div>
-                            </article>
-                            <article class="col-12 col-md-6">
-                                <div class="cover-historic"></div>
-                                <div class="music-info">
-                                    <div class="song">No Title</div>
-                                    <div class="artist">No Artist</div>
-                                </div>   
-                            </article>                         
-                        </div>
-                    </div>
+                    <span id="buttonPlay" class="sr-only" aria-live="polite">PLAY</span>
                 </div>
             </div>
         </section>
-    </main>
-    <div class="modal fade" id="modalLyrics" tabindex="-1" role="dialog" aria-labelledby="lyricsSong" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="lyricsSong">Lyrics</h5>
-                    <button type="button" style="color: #fff" class="close" data-dismiss="modal" aria-label="Fechar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                
-                <div class="modal-body" id="lyric"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
-                </div>
+
+        <section class="historic">
+            <h2 class="section-title">Tocadas recentemente</h2>
+            <div class="history-list" id="historicSong">
+                <article>
+                    <div class="cover-historic"></div>
+                    <div class="music-info">
+                        <div class="song">Música</div>
+                        <div class="artist">Artista</div>
+                    </div>
+                </article>
+                <article>
+                    <div class="cover-historic"></div>
+                    <div class="music-info">
+                        <div class="song">Música</div>
+                        <div class="artist">Artista</div>
+                    </div>
+                </article>
             </div>
+        </section>
+    </main>
+
+    <div id="modalLyrics" role="dialog" aria-modal="true" aria-labelledby="lyricsSong" aria-hidden="true">
+        <div class="modal-card">
+            <header>
+                <h3 id="lyricsSong">Letra</h3>
+                <button type="button" class="modal-close" aria-label="Fechar">
+                    <i class="fa fa-times"></i>
+                </button>
+            </header>
+            <div id="lyric"></div>
         </div>
     </div>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery.marquee@1.6.0/jquery.marquee.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
-    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+
     <script type="text/javascript" src="js/script.js"></script>
     <script>
+        // Modal de letra (o script sinaliza que há letra disponível
+        // colocando data-toggle no botão .lyrics)
+        (function () {
+            var modal = document.getElementById('modalLyrics');
+            var openButton = document.querySelector('.lyrics');
+
+            function closeModal() {
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+            }
+
+            openButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (!openButton.hasAttribute('data-toggle')) return; // sem letra disponível
+                modal.style.display = 'flex';
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+            });
+
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) closeModal();
+            });
+            modal.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') closeModal();
+            });
+        })();
+
+        // Popover de volume (abre no clique do botão circular, fecha ao clicar fora)
+        (function () {
+            var wrap = document.querySelector('.volume-wrap');
+            var toggle = document.querySelector('.volume-toggle');
+            var popover = document.querySelector('.volume-popover');
+            if (!wrap || !toggle || !popover) return;
+
+            toggle.addEventListener('click', function () {
+                popover.hidden = !popover.hidden;
+            });
+            document.addEventListener('click', function (event) {
+                if (!wrap.contains(event.target)) popover.hidden = true;
+            });
+        })();
+
         if ('serviceWorker' in navigator) {
-          window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/service-worker.js')
-              .then(function(registration) {
-                console.log('Service Worker registrado com sucesso:', registration);
-              }, function(err) {
-                console.log('Falha ao registrar o Service Worker:', err);
-              });
-          });
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('service-worker.js');
+            });
         }
-      </script>  
+    </script>
 </body>
 
 </html>

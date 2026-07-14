@@ -3,8 +3,8 @@
   "short_name": "Jailson Webradio",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#0b0e13",
+  "theme_color": "#0b0e13",
   "icons": [
     {
       "src": "img/cover.png",
