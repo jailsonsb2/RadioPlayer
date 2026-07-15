@@ -1,6 +1,13 @@
-# HTML5 Full Page Radio Player with PWA Support
+# 🎵 Radio Player HTML5 — Free Web Radio Player for Your Website
 
-A modern, dependency-free "now playing" radio player for any stream (Icecast, Shoutcast, Zeno, RadioJar and more): the album art of the current song becomes a blurred full-page backdrop, with glass-style circular controls on top. No Bootstrap, no jQuery — just HTML, CSS and vanilla JavaScript.
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-online-brightgreen)](https://jailsonsb2.github.io/RadioPlayer/)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![No API Key](https://img.shields.io/badge/API_key-not_required-orange)](#data-sources)
+[![PWA Ready](https://img.shields.io/badge/PWA-installable-5A0FC8)](#progressive-web-app-pwa)
+
+**[▶ Try the live demo](https://jailsonsb2.github.io/RadioPlayer/)** — a modern, dependency-free **HTML5 radio player** for any stream (**Icecast, Shoutcast, Zeno.FM, RadioJar, Azuracast** and more): the album art of the current song becomes a blurred full-page backdrop, with glass-style circular controls on top. Now playing metadata, album art, song lyrics, recently played history, **YouTube clip mode** and installable **PWA** — no Bootstrap, no jQuery, no API key. Just HTML, CSS and vanilla JavaScript.
+
+> 🇧🇷 **Player de rádio online para o seu site — grátis e sem chave de API.** Mostra a música tocando agora com capa do álbum, letra da música, histórico das últimas tocadas e até o **clipe do YouTube sincronizado com a rádio**. Compatível com Icecast, Shoutcast, Zeno.FM e Azuracast. É só editar duas linhas e hospedar em qualquer servidor (ou de graça na Vercel/Netlify/GitHub Pages).
 
 ## Demo Screenshots
 
@@ -129,6 +136,18 @@ Edit the `manifest.json` file:
 * `P` and `space` - play/pause
 * `arrow up` and `arrow down` - increase/decrease volume
 * `0 to 9` - volume percent
+
+## Related Projects
+
+More free radio players from the same author — pick the style that fits your station:
+
+| Project | Style |
+|---|---|
+| [**Radioplayer_api**](https://github.com/jailsonsb2/Radioplayer_api) | Multi-station player with **3 switchable layouts** (Retrô Glass, Clássico, Aurora Deck) |
+| [**bottom_radioplayer**](https://github.com/jailsonsb2/bottom_radioplayer) | **Bottom-bar component** for websites — the audio never stops while visitors navigate |
+| [**Radioplayer_html5**](https://github.com/jailsonsb2/Radioplayer_html5) | Multi-station HTML5 player with API now playing |
+| [**RadioPlayer-ZenoRadio**](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio) | Full-page player for **Zeno.FM** streams (SSE metadata) |
+| [**metadados**](https://github.com/jailsonsb2/metadados) | The free **now playing API** used by these players (ICY metadata + iTunes + YouTube clips) |
 
 ## Feedback
 
