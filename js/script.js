@@ -321,11 +321,156 @@ async function getStreamingData() {
                 }
                 musicaAtual = safeCurrentSong;
             }
+
+            // Modo clipe — fora do guard de música nova: a API resolve o
+            // youtubeId de forma assíncrona e ele pode chegar num poll
+            // seguinte, com a mesma música
+            handleClipTrack(data, safeCurrentSong, safeCurrentArtist);
         }
     } catch (error) {
         console.log("Erro ao buscar dados de streaming:", error);
     }
 }
+
+// ==================== MODO CLIPE (YouTube) ====================
+// Quando a API entrega o youtubeId da música, o botão de clipe aparece.
+// Ligado: o vídeo assume o lugar da capa, sincronizado com a rádio
+// (start = elapsed). Pausar o vídeo retoma a rádio; dar play pausa.
+
+let clipTrack = null;
+let lastClipShownId = null;
+let clipWasRadioPlaying = false;
+const clipPlayingSet = new Set();
+
+function clipModeOn() {
+    return localStorage.getItem('clipMode') === '1';
+}
+
+function handleClipTrack(data, song, artist) {
+    const yt = data.youtubeId || data.youtube_id || '';
+    const np = data.now_playing || {};
+    clipTrack = yt ? { id: yt, song, artist, elapsed: np.elapsed || 0, duration: np.duration || 0, receivedAt: Date.now() } : null;
+
+    const btn = document.querySelector('.clip-toggle');
+    if (btn && yt) btn.hidden = false; // a API suporta clipes: revela o botão
+
+    if (!clipModeOn()) return;
+    if (clipTrack) {
+        openClip(clipTrack);
+    } else {
+        closeClip(true); // música sem clipe: volta para a rádio
+    }
+}
+
+function openClip(track) {
+    if (lastClipShownId === track.id) return;
+    lastClipShownId = track.id;
+
+    const coverBox = document.querySelector('.cover-album');
+    if (!coverBox) return;
+
+    // pausa INTENCIONAL da rádio (o watchdog não deve religar por cima)
+    if (!audio.paused) {
+        clipWasRadioPlaying = true;
+        isIntentionalPause = true;
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        fadeOut(function () { audio.pause(); });
+    }
+
+    // Sincroniza com a rádio: começa no ponto em que a música está.
+    // Aproximado: o stream tem atraso de buffer e o clipe pode ser outra
+    // versão da música (ao vivo vs estúdio).
+    let start = 0;
+    if (track.elapsed) {
+        start = Math.floor(track.elapsed + (Date.now() - track.receivedAt) / 1000);
+        if (track.duration && start >= track.duration - 5) start = 0;
+        if (start < 8) start = 0;
+    }
+
+    coverBox.classList.add('is-clip');
+    const oldFrame = coverBox.querySelector('iframe.clip-frame');
+    if (oldFrame) oldFrame.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.className = 'clip-frame';
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + track.id + '?autoplay=1&enablejsapi=1' + (start ? '&start=' + start : '');
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.title = 'Clipe: ' + (track.song || '');
+    // handshake do widget: o player passa a emitir eventos de estado
+    iframe.addEventListener('load', function () {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 'clip', channel: 'widget' }), '*');
+    });
+    coverBox.appendChild(iframe);
+}
+
+function closeClip(resumeRadio) {
+    const coverBox = document.querySelector('.cover-album');
+    if (coverBox) {
+        coverBox.classList.remove('is-clip');
+        const iframe = coverBox.querySelector('iframe.clip-frame');
+        if (iframe) iframe.remove();
+    }
+    lastClipShownId = null;
+    clipPlayingSet.clear();
+
+    if (resumeRadio && clipWasRadioPlaying && audio.paused) {
+        isIntentionalPause = false;
+        fadeIn();
+        audio.load();
+        audio.play().catch(function () {});
+    }
+    clipWasRadioPlaying = false;
+}
+
+// Eventos de estado do player do YouTube: pausar o vídeo retoma a rádio,
+// dar play de novo pausa a rádio
+window.addEventListener('message', function (event) {
+    let host = '';
+    try { host = new URL(event.origin).hostname; } catch (e) { return; }
+    if (!/(^|\.)youtube(-nocookie)?\.com$/.test(host)) return;
+
+    let payload;
+    try { payload = JSON.parse(event.data); } catch (e) { return; }
+    const state = payload && payload.info && typeof payload.info.playerState === 'number' ? payload.info.playerState : null;
+    if (state === null) return;
+
+    const id = payload.id || 'clip';
+    if (state === 1) { // vídeo tocando
+        clipPlayingSet.add(id);
+        if (!audio.paused) {
+            clipWasRadioPlaying = true;
+            isIntentionalPause = true;
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            fadeOut(function () { audio.pause(); });
+        }
+    } else if (state === 2 || state === 0) { // pausado ou terminou
+        clipPlayingSet.delete(id);
+        if (clipPlayingSet.size === 0 && clipWasRadioPlaying && audio.paused) {
+            isIntentionalPause = false;
+            fadeIn();
+            audio.load();
+            audio.play().catch(function () {});
+        }
+    }
+});
+
+// Botão liga/desliga do modo clipe
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.querySelector('.clip-toggle');
+    if (!btn) return;
+    btn.classList.toggle('is-active', clipModeOn());
+    btn.addEventListener('click', function () {
+        const turningOn = !clipModeOn();
+        localStorage.setItem('clipMode', turningOn ? '1' : '0');
+        btn.classList.toggle('is-active', turningOn);
+        if (turningOn && clipTrack) {
+            openClip(clipTrack);
+        } else if (!turningOn) {
+            closeClip(true);
+        }
+    });
+});
 
 
 // Comparação tolerante a acentos/caixa ("GLÓRIA" ≈ "Gloria")
