@@ -616,6 +616,8 @@ body.modal-open { overflow: hidden; }
 
 .historic article.has-clip {
     cursor: pointer;
+    position: relative;
+    padding-right: 60px; /* espaço para o selo de play à direita */
     transition: transform 0.15s ease, border-color 0.2s ease;
 }
 
@@ -624,28 +626,26 @@ body.modal-open { overflow: hidden; }
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-.historic article.has-clip .cover-historic {
-    position: relative;
-}
-
-/* selo de play sobre a capa */
-.historic article.has-clip .cover-historic::after {
+/* selo de play no canto direito do card (sobre a capa ele escondia a arte) */
+.historic article.has-clip::after {
     content: "";
     position: absolute;
-    inset: 0;
-    margin: auto;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 34px;
     height: 34px;
     border-radius: 50%;
     background:
         url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="m8 5 12 7-12 7z"/></svg>') center / 14px no-repeat,
-        rgba(11, 14, 19, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    opacity: 0.85;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+        rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    opacity: 0.8;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.2s ease;
 }
 
-.historic article.has-clip:hover .cover-historic::after {
+.historic article.has-clip:hover::after {
     opacity: 1;
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.1);
+    background-color: rgba(255, 255, 255, 0.16);
 }
