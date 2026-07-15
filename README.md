@@ -20,6 +20,12 @@ s
 * The 4 most recent songs, with covers from the search API (iTunes as fallback, filtered to music only)
 * The song currently playing is filtered out of the list (no duplicates)
 
+**🎬 Clip mode (music video of the current song)**
+* When the metadata API returns a `youtubeId` in the now-playing payload, a clip button automatically appears (feature-detected)
+* Turned on, the music video takes the place of the album art, synchronized with the radio position (`start = elapsed`)
+* Every song change swaps the embed; songs without a clip fall back to the radio automatically
+* Pausing the video resumes the radio, playing it again pauses the radio — no external library (YouTube IFrame postMessage)
+
 **Player**
 * Smooth volume fade in/out on play/pause (no audio "pop")
 * Loading spinner while the stream buffers
