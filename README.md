@@ -26,6 +26,8 @@ s
 **Recently played**
 * The 4 most recent songs, with covers from the search API (iTunes as fallback, filtered to music only)
 * The song currently playing is filtered out of the list (no duplicates)
+* 🎬 **Clickable history**: songs with a known music video show a play badge — click the card to **watch the clip of a song that already played** (one-off playback: the radio pauses while it plays and resumes when it ends or you pause it; it does not turn clip mode on)
+* With clip mode ON, a history clip plays to the end and then the player returns to the video programming (the current song's clip) by itself
 
 **🎬 Clip mode (music video of the current song)**
 * When the metadata API returns a `youtubeId` in the now-playing payload, a clip button automatically appears (feature-detected)
