@@ -611,3 +611,41 @@ body.modal-open { overflow: hidden; }
     color: var(--accent);
     border-color: var(--accent);
 }
+
+/* ---- histórico com clipe: card clicável para assistir o vídeo ---- */
+
+.historic article.has-clip {
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.2s ease;
+}
+
+.historic article.has-clip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.historic article.has-clip .cover-historic {
+    position: relative;
+}
+
+/* selo de play sobre a capa */
+.historic article.has-clip .cover-historic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background:
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="m8 5 12 7-12 7z"/></svg>') center / 14px no-repeat,
+        rgba(11, 14, 19, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    opacity: 0.85;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.historic article.has-clip:hover .cover-historic::after {
+    opacity: 1;
+    transform: scale(1.1);
+}

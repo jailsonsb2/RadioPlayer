@@ -275,7 +275,7 @@ async function getStreamingData() {
                 historicContainer.innerHTML = "";
 
                 const historyArray = data.song_history
-                    ? data.song_history.map((item) => ({ song: item.song.title, artist: item.song.artist }))
+                    ? data.song_history.map((item) => ({ song: item.song.title, artist: item.song.artist, youtubeId: item.song.youtubeId || "" }))
                     : (data.history || []);
 
                 // A API inclui a música que está tocando agora no topo do
@@ -308,6 +308,17 @@ async function getStreamingData() {
                       `;
                     article.querySelector(".song").textContent = songInfo.song || "Desconhecido";
                     article.querySelector(".artist").textContent = songInfo.artist || "Desconhecido";
+
+                    // Música com clipe conhecido: o card vira um atalho para
+                    // assistir o vídeo da música que já tocou
+                    if (songInfo.youtubeId) {
+                        article.classList.add("has-clip");
+                        article.title = "Assistir o clipe de " + (songInfo.song || "");
+                        article.addEventListener("click", function () {
+                            playHistoryClip(songInfo);
+                        });
+                    }
+
                     historicContainer.appendChild(article);
                     setTimeout(() => article.classList.remove("animated", "slideInRight"), 2000);
                     try {
@@ -457,6 +468,10 @@ window.addEventListener('message', function (event) {
         // Vídeo que TERMINOU (estado 0) mantém o modo — o próximo clipe
         // deve abrir, essa é a promessa do modo clipe.
         if (state === 2) exitClipMode();
+
+        // Clipe avulso (modo clipe desligado, ex.: clique no histórico):
+        // pausado ou terminado, fecha o vídeo e restaura a capa
+        if ((state === 2 || state === 0) && !clipModeOn()) closeClip(false);
     }
 });
 
@@ -790,6 +805,22 @@ function togglePlay() {
         audio.load();
         audio.play();
     }
+}
+
+// Reprodução avulsa de um clipe do histórico (não liga o modo clipe:
+// é "assistir esta música", não "seguir a programação em vídeo")
+function playHistoryClip(songInfo) {
+    openClip({
+        id: songInfo.youtubeId,
+        song: songInfo.song,
+        artist: songInfo.artist,
+        elapsed: 0,
+        duration: 0,
+        receivedAt: Date.now(),
+    });
+    // traz o player para a vista (o histórico fica abaixo da dobra)
+    const coverBox = document.querySelector('.cover-album');
+    if (coverBox) coverBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Sai do modo clipe (persistindo a escolha e restaurando a capa)
