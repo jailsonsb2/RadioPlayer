@@ -757,6 +757,17 @@ document.getElementById('volume').oninput = function () {
 }
 
 
+// A rádio e um vídeo do YouTube nunca tocam juntos: dar play na rádio
+// pausa qualquer embed em reprodução (o caminho inverso — dar play no
+// vídeo pausa a rádio — é tratado pelo watcher de mensagens do YouTube)
+function pauseYouTubeEmbeds() {
+    document.querySelectorAll('iframe[src*="youtube"]').forEach(function (frame) {
+        try {
+            frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), '*');
+        } catch (e) {}
+    });
+}
+
 function togglePlay() {
     if (!audio.paused) {
         isIntentionalPause = true;
@@ -765,6 +776,7 @@ function togglePlay() {
             audio.pause();
         });
     } else {
+        pauseYouTubeEmbeds();
         isIntentionalPause = false;
         fadeIn();
         audio.load();
