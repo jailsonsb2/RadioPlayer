@@ -452,6 +452,11 @@ window.addEventListener('message', function (event) {
             audio.load();
             audio.play().catch(function () {});
         }
+        // Pausa MANUAL do vídeo (estado 2) = o usuário escolheu o áudio:
+        // sai do modo clipe para a troca de música não reabrir o vídeo.
+        // Vídeo que TERMINOU (estado 0) mantém o modo — o próximo clipe
+        // deve abrir, essa é a promessa do modo clipe.
+        if (state === 2) exitClipMode();
     }
 });
 
@@ -777,11 +782,23 @@ function togglePlay() {
         });
     } else {
         pauseYouTubeEmbeds();
+        // Voltar para a rádio desliga o modo clipe — sem isso, a próxima
+        // troca de música reabria o vídeo por cima do áudio
+        exitClipMode();
         isIntentionalPause = false;
         fadeIn();
         audio.load();
         audio.play();
     }
+}
+
+// Sai do modo clipe (persistindo a escolha e restaurando a capa)
+function exitClipMode() {
+    if (!clipModeOn()) return;
+    localStorage.setItem('clipMode', '0');
+    const btn = document.querySelector('.clip-toggle');
+    if (btn) btn.classList.remove('is-active');
+    closeClip(false);
 }
 
 function volumeUp() {
