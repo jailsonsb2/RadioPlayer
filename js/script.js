@@ -351,6 +351,9 @@ async function getStreamingData() {
 let clipTrack = null;
 let lastClipShownId = null;
 let clipWasRadioPlaying = false;
+// Clipe avulso do histórico na tela: segura o acompanhamento automático
+// do modo clipe (sem isso o poll trocava o vídeo de volta a cada 10s)
+let historyClipActive = false;
 const clipPlayingSet = new Set();
 
 function clipModeOn() {
@@ -364,6 +367,10 @@ function handleClipTrack(data, song, artist) {
 
     const btn = document.querySelector('.clip-toggle');
     if (btn && yt) btn.hidden = false; // a API suporta clipes: revela o botão
+
+    // Um clipe do histórico está tocando: não troca o vídeo por baixo do
+    // usuário — quando ele terminar, o watcher volta para a programação
+    if (historyClipActive) return;
 
     if (!clipModeOn()) return;
     if (clipTrack) {
@@ -423,6 +430,7 @@ function closeClip(resumeRadio) {
         if (iframe) iframe.remove();
     }
     lastClipShownId = null;
+    historyClipActive = false;
     clipPlayingSet.clear();
 
     if (resumeRadio && clipWasRadioPlaying && audio.paused) {
@@ -457,6 +465,17 @@ window.addEventListener('message', function (event) {
         }
     } else if (state === 2 || state === 0) { // pausado ou terminou
         clipPlayingSet.delete(id);
+
+        // Clipe do histórico TERMINOU com o modo clipe ligado: volta para
+        // a programação em vídeo (o clipe da música atual), sem retomar a
+        // rádio no meio do caminho
+        if (state === 0 && historyClipActive && clipModeOn() && clipTrack) {
+            historyClipActive = false;
+            openClip(clipTrack);
+            return;
+        }
+        historyClipActive = false;
+
         if (clipPlayingSet.size === 0 && clipWasRadioPlaying && audio.paused) {
             isIntentionalPause = false;
             fadeIn();
@@ -810,6 +829,7 @@ function togglePlay() {
 // Reprodução avulsa de um clipe do histórico (não liga o modo clipe:
 // é "assistir esta música", não "seguir a programação em vídeo")
 function playHistoryClip(songInfo) {
+    historyClipActive = true;
     openClip({
         id: songInfo.youtubeId,
         song: songInfo.song,
