@@ -614,9 +614,10 @@ body.modal-open { overflow: hidden; }
 
 /* ---- histórico com clipe: card clicável para assistir o vídeo ---- */
 
-.historic article.has-clip {
+#historicSong article.has-clip {
     cursor: pointer;
     position: relative;
+    /* o seletor leva o #id para vencer o padding:12px da regra base */
     padding-right: 60px; /* espaço para o selo de play à direita */
     transition: transform 0.15s ease, border-color 0.2s ease;
 }
