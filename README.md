@@ -46,7 +46,7 @@ s
 * Progressive Web App (PWA) with an "Install app" button when the browser allows it
 * Accent color and surfaces themeable via CSS variables
 
-## Getting Started
+## How do I add this radio player to my website?
 
 Open [js/script.js](js/script.js) and edit the lines below:
 

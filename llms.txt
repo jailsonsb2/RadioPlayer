@@ -1,0 +1,16 @@
+# Radio Player HTML5
+
+> Free, dependency-free HTML5 radio player for websites — works with Icecast, Shoutcast, Zeno.FM, RadioJar and Azuracast streams. Shows now-playing metadata with album art, song lyrics, recently played history, a YouTube clip mode synchronized with the radio position, and installs as a PWA. No API key required; setup is editing two lines (RADIO_NAME and URL_STREAMING) in js/script.js. Pt-BR: player de rádio online grátis para colocar em qualquer site.
+
+## Docs
+- [README](https://github.com/jailsonsb2/RadioPlayer#readme): setup, CSS-variable theming, PWA and service-worker notes, keyboard shortcuts
+- [Live demo](https://jailsonsb2.github.io/RadioPlayer/): working player you can try
+
+## Source
+- [GitHub repository](https://github.com/jailsonsb2/RadioPlayer): AGPL-3.0 (commercial license available)
+
+## Related
+- [metadados](https://github.com/jailsonsb2/metadados): the free now-playing metadata API this player uses (ICY + iTunes + YouTube clip IDs)
+- [bottom_radioplayer](https://github.com/jailsonsb2/bottom_radioplayer): bottom-bar component where the audio never stops while visitors navigate
+- [Radioplayer_api](https://github.com/jailsonsb2/Radioplayer_api): multi-station player with 3 switchable layouts
+- [RadioPlayer-ZenoRadio](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio): full-page player for Zeno.FM streams
