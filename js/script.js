@@ -241,6 +241,17 @@ async function getStreamingData() {
         }
 
         if (data) {
+            // Payload de carregamento: a API acabou de começar a monitorar
+            // esta rádio. É um ESTADO, não uma música — mostrar o aviso e
+            // NÃO buscar capa/letra de "Carregando...". musicaAtual fica
+            // intacto para o próximo poll com dados reais processar normal.
+            // (O teste da string cobre versões antigas da API sem a flag.)
+            if (data.loading || (!data.artist && /^carregando/i.test(data.songtitle || ""))) {
+                document.getElementById("currentSong").textContent = "Carregando...";
+                document.getElementById("currentArtist").textContent = RADIO_NAME;
+                return;
+            }
+
             const page = new Page();
             let currentSong = data.songtitle || (typeof data.song === "object" ? data.song.title : data.song) || "";
             let currentArtist = (typeof data.artist === "object" ? data.artist.title : data.artist) || "";
