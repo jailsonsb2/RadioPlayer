@@ -4,8 +4,8 @@ const RADIO_NAME = 'Jailson Web Rádio';
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
 //API URL /
-const API_URL = 'https://twj.es/free/?url='+URL_STREAMING;
-const FALLBACK_API_URL = 'https://twj.es/metadata/?url=' + URL_STREAMING;
+const API_URL = 'https://api.twj.es/?url='+URL_STREAMING;
+const FALLBACK_API_URL = 'https://api.twj.es/metadata/?url=' + URL_STREAMING;
 
 let userInteracted = true;
 
