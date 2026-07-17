@@ -152,11 +152,8 @@ More free radio players from the same author — pick the style that fits your s
 
 ## Feedback
 
-If you have any feedback, please reach out to me at contact@jailson.es
+If you have any feedback, please reach out to me at contato@jailson.es
 
-## Credits
-* [gsavio/player-shoutcast-html5](https://github.com/gsavio/player-shoutcast-html5)
-* [joeyboli/RadioPlayer](https://github.com/joeyboli/RadioPlayer)
 
 ---
 
