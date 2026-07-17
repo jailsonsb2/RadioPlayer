@@ -14,6 +14,12 @@ let musicaAtual = null;
 // Cache para a API do iTunes
 const cache = {};
 
+// Guarda a capa que a API usou para cada música enquanto ela tocava como
+// "now playing" (data.albumArt). O histórico reaproveita essa mesma capa em
+// vez de buscar de novo no iTunes/search.php, evitando que a mesma música
+// apareça com capas diferentes na tela principal e no histórico.
+const nowPlayingArtCache = {};
+
 window.addEventListener('load', () => {
     const page = new Page();
     page.changeTitlePage();
@@ -133,7 +139,8 @@ class Page {
             const songArtist = typeof info.artist === "object" ? info.artist.title : info.artist;
 
             try {
-                const data = await getCoverData(songArtist, songTitle, defaultCoverArt, defaultCoverArt);
+                const cacheKey = normalizeText(songArtist) + '|' + normalizeText(songTitle);
+                const data = nowPlayingArtCache[cacheKey] || await getCoverData(songArtist, songTitle, defaultCoverArt, defaultCoverArt);
                 coverHistoric.style.backgroundImage = "url(" + (data.thumbnail || data.art || defaultCoverArt) + ")";
             } catch (error) {
                 console.error("Erro ao buscar capa do histórico:", error);
@@ -165,6 +172,13 @@ class Page {
                 // Aplica a imagem de capa (sempre, mesmo se for a padrão)
                 coverArt.style.backgroundImage = 'url(' + art + ')';
                 coverBackground.style.backgroundImage = 'url(' + cover + ')';
+
+                // Lembra qual capa foi usada para esta música tocando agora,
+                // para o histórico reaproveitar quando ela aparecer lá
+                if (art && art !== defaultCoverArt) {
+                    const cacheKey = normalizeText(artist) + '|' + normalizeText(song);
+                    nowPlayingArtCache[cacheKey] = { art, cover, thumbnail: art };
+                }
 
                 // Adiciona/remove classes para animação (se necessário)
                 coverArt.classList.add('animated', 'bounceInLeft');
