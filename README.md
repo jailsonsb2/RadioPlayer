@@ -11,8 +11,7 @@
 
 ## Demo Screenshots
 
-![Demo Screenshot](https://i.imgur.com/2csydPz.jpg)
-s
+![Demo Screenshot](https://i.imgur.com/BZiHqO2.jpg)
 
 ## Features
 
