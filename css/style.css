@@ -665,7 +665,8 @@ body.modal-open { overflow: hidden; }
 }
 
 .partner img {
-    max-width: 120px;
+    max-width: 234px;
+    width: 100%;
     height: auto;
     border-radius: 6px;
 }
