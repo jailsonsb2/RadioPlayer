@@ -1,5 +1,5 @@
 // Define o nome do cache (bump da versão invalida o layout antigo em cache)
-const CACHE_NAME = 'web-radio-v2';
+const CACHE_NAME = 'web-radio-v3';
 
 // Lista de arquivos a serem cacheados
 const urlsToCache = [
@@ -8,6 +8,7 @@ const urlsToCache = [
   '/css/style.css',
   '/js/script.js',
   '/img/cover.png',
+  '/img/radiosnet.png',
   // Adicione outros recursos que deseja cache aqui
 ];
 

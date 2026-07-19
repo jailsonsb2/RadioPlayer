@@ -650,3 +650,22 @@ body.modal-open { overflow: hidden; }
     transform: translateY(-50%) scale(1.1);
     background-color: rgba(255, 255, 255, 0.16);
 }
+
+/* ---- selo RadiosNet no rodapé ---- */
+
+.partner {
+    text-align: center;
+    padding: 12px 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.partner:hover {
+    opacity: 1;
+}
+
+.partner img {
+    max-width: 120px;
+    height: auto;
+    border-radius: 6px;
+}
